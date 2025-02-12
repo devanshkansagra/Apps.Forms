@@ -11,6 +11,8 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
+import { ICommandUtilityParams } from "../definitions/ICommandUtility";
+import { CommandUtility } from "./CommandUtility";
 
 export class SurveyCommand implements ISlashCommand {
     constructor(private readonly app: SurveysApp) {}
@@ -29,6 +31,23 @@ export class SurveyCommand implements ISlashCommand {
         const params = context.getArguments();
         const room = context.getRoom();
         const sender = context.getSender();
+        const triggerId = context.getTriggerId();
+        const threadId = context.getThreadId();
 
+        const commandUtilityParams: ICommandUtilityParams = {
+            params,
+            sender,
+            room,
+            triggerId,
+            threadId,
+            read,
+            modify,
+            http,
+            persis,
+            app: this.app,
+        };
+
+        const commandUtility = new CommandUtility(commandUtilityParams);
+        await commandUtility.resolveCommand();
     }
 }
