@@ -1,0 +1,16 @@
+{
+    "id": "d6588a9f-0f27-4e6e-8975-e6cc380f0cab",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.44.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Devansh Kansagra",
+        "homepage": "https://github.com/devanshkansagra",
+        "support": "https://github.com/devanshkansagra"
+    },
+    "name": "Surveys",
+    "nameSlug": "surveys",
+    "classFile": "SurveysApp.ts",
+    "description": "Integrating Surveys",
+    "implements": []
+}
