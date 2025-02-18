@@ -9,23 +9,18 @@ import { UIKitSurfaceType } from "@rocket.chat/apps-engine/definition/uikit";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
 import { ModalEnum } from "../enums/ModalEnum";
-import { ElementEnum } from "../enums/ElementEnum";
 
-export async function CreateFormModal({
+export async function AddQuestionModal({
     read,
     modify,
     http,
     persis,
-    triggerId,
-    threadId,
     id,
 }: {
     read: IRead;
     modify: IModify;
     http: IHttp;
     persis: IPersistence;
-    triggerId: string | undefined;
-    threadId: string | undefined;
     id: string;
 }): Promise<IUIKitSurfaceViewParam> {
     const blocks: LayoutBlock[] = [];
@@ -35,70 +30,74 @@ export async function CreateFormModal({
             type: "input",
             label: {
                 type: TextTypes.PLAIN_TEXT,
-                text: "Form Title",
+                text: "Question Title",
             },
             element: {
                 type: "plain_text_input",
+                appId: id,
+                blockId: "",
+                actionId: "",
                 placeholder: {
                     type: TextTypes.PLAIN_TEXT,
-                    text: "Untitled",
+                    text: "Untitled Question",
                 },
-                appId: id,
-                blockId: ElementEnum.FORM_TITLE_BLOCK,
-                actionId: ElementEnum.FORM_TITLE_ACTION,
             },
         },
         {
             type: "input",
             label: {
                 type: TextTypes.PLAIN_TEXT,
-                text: "Description",
+                text: "Type of Question",
             },
             element: {
-                type: "plain_text_input",
+                type: "static_select",
+                appId: id,
+                blockId: "",
+                actionId: "",
+                options: [
+                    {
+                        value: "Short Answer",
+                        text: {
+                            type: "plain_text",
+                            text: "Short Answer",
+                        },
+                    },
+                    {
+                        value: "Paragraph",
+                        text: {
+                            type: "plain_text",
+                            text: "Paragraph",
+                        },
+                    },
+                    {
+                        value: "Multiple Choice",
+                        text: {
+                            type: "plain_text",
+                            text: "Multiple Choice",
+                        },
+                    },
+                ],
                 placeholder: {
                     type: TextTypes.PLAIN_TEXT,
-                    text: "Form Description",
+                    text: "Select the type of Question",
                 },
-                appId: id,
-                blockId: ElementEnum.FORM_DESCRIPTION_BLOCK,
-                actionId: ElementEnum.FORM_DESCRIPTION_ACTION,
-                multiline: true,
             },
         },
     );
 
-    blocks.push({
-        type: 'section',
-        accessory: {
-            type: 'button',
-            text: {
-                type: TextTypes.PLAIN_TEXT,
-                text: "Add Question",
-            },
-            blockId: ElementEnum.ADD_QUESTION_BLOCK,
-            actionId: ElementEnum.ADD_Question_ACTION,
-            appId: id,
-        }
-    })
-
-    blocks.push({
-        type: 'divider',
-    })
-
     return {
         type: UIKitSurfaceType.MODAL,
-        id: ModalEnum.CREATE_FORM_VIEW,
+        id: ModalEnum.ADD_QUESTION_VIEW,
         title: {
             type: TextTypes.PLAIN_TEXT,
-            text: ModalEnum.CREATE_FORM_TITLE,
+            text: ModalEnum.ADD_QUESTION_TITLE,
         },
         blocks: blocks,
         submit: {
             type: "button",
             text: {
                 type: TextTypes.PLAIN_TEXT,
-                text: "Create",
+                text: "Add Question",
             },
             blockId: "",
             actionId: "",

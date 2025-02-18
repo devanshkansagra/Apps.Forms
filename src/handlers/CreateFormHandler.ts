@@ -19,7 +19,6 @@ export async function createForm(
     triggerId: string | undefined,
     threadId: string | undefined,
 ) {
-    console.log("Executing createFormHandler");
     if (triggerId) {
         const modal = await CreateFormModal({
             read,
