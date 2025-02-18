@@ -11,4 +11,6 @@ export enum ElementEnum {
     QUESTION_TYPE_BLOCK = 'question-type-block',
     OPTIONS_BLOCK = 'options-block',
     OPTIONS_ACTION = 'options-action',
+    QUESTION_BLOCK = 'question-block',
+    QUESTION_ACTION = 'question-action',
 }

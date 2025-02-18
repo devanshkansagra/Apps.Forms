@@ -19,6 +19,7 @@ export async function CreateFormModal({
     triggerId,
     threadId,
     id,
+    questionElement,
 }: {
     read: IRead;
     modify: IModify;
@@ -27,6 +28,7 @@ export async function CreateFormModal({
     triggerId: string | undefined;
     threadId: string | undefined;
     id: string;
+    questionElement?: any,
 }): Promise<IUIKitSurfaceViewParam> {
     const blocks: LayoutBlock[] = [];
 
@@ -67,6 +69,10 @@ export async function CreateFormModal({
             },
         },
     );
+
+    if(questionElement) {
+        blocks.push(...questionElement);
+    }
 
     blocks.push({
         type: 'section',

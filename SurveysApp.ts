@@ -46,7 +46,7 @@ export class SurveysApp extends App {
         http: IHttp,
         persistence: IPersistence,
         modify: IModify,
-    ): Promise<IUIKitResponse> {
+    ): Promise<void | IUIKitResponse> {
         const handler = new ExecuteViewSubmitHandler(
             this,
             context,
