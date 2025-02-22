@@ -5,7 +5,7 @@ import {
     IRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { SurveysApp } from "../../SurveysApp";
-import { UIKitViewCloseInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
+import { IUIKitResponse, UIKitViewCloseInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
 import { ModalEnum } from "../enums/ModalEnum";
 import { QuestionPersistence } from "../persistence/questionPersistence";
 
@@ -22,9 +22,9 @@ export class ExecuteViewClosedHandler {
         this.context = context;
     }
 
-    public async execute():Promise<any> {
-        const {view } = this.context.getInteractionData();
-        console.log(view);
+    public async execute():Promise<IUIKitResponse> {
+        // const {view } = this.context.getInteractionData();
+        // console.log(view);
         return { success: true } as any;
     }
 }

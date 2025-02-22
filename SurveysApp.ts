@@ -21,6 +21,11 @@ import {
 import { ExecuteViewSubmitHandler } from "./src/handlers/ExecuteViewSubmitHandler";
 import { ExecuteBlockActionHandler } from "./src/handlers/ExecuteBlockActionHandler";
 import { ExecuteViewClosedHandler } from "./src/handlers/ExecuteViewClosedHandler";
+import {
+    ApiSecurity,
+    ApiVisibility,
+} from "@rocket.chat/apps-engine/definition/api";
+import { WebhookEndpoint } from "./src/endpoints/webhook";
 
 export class SurveysApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -40,6 +45,12 @@ export class SurveysApp extends App {
                 configurationExtend.settings.provideSetting(setting);
             }),
         );
+
+        await configurationExtend.api.provideApi({
+            visibility: ApiVisibility.PUBLIC,
+            security: ApiSecurity.UNSECURE,
+            endpoints: [new WebhookEndpoint(this)],
+        });
     }
 
     public async executeViewSubmitHandler(
@@ -85,15 +96,15 @@ export class SurveysApp extends App {
         http: IHttp,
         persistence: IPersistence,
         modify: IModify,
-        context: UIKitViewCloseInteractionContext
-    ) {
+        context: UIKitViewCloseInteractionContext,
+    ): Promise<IUIKitResponse> {
         const handler = new ExecuteViewClosedHandler(
             this,
             read,
             http,
             persistence,
             modify,
-            context
+            context,
         );
 
         return await handler.execute();

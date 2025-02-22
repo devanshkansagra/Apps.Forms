@@ -76,8 +76,8 @@ export class ExecuteBlockActionHandler {
                                     type: TextTypes.PLAIN_TEXT,
                                     text: "Enter question for short answers",
                                 },
-                                blockId: value+"Block",
-                                actionId: value+"Action",
+                                blockId: value + "Block",
+                                actionId: value + "Action",
                                 appId: this.app.getID(),
                             },
                         };
@@ -96,49 +96,66 @@ export class ExecuteBlockActionHandler {
                                     type: TextTypes.PLAIN_TEXT,
                                     text: "Enter question for paragraphs",
                                 },
-                                blockId: value+"Block",
-                                actionId: value+"Action",
+                                blockId: value + "Block",
+                                actionId: value + "Action",
                                 appId: this.app.getID(),
                             },
                         };
                         questionBlocks.push(block);
                     } else if (value === "Multiple Choice") {
-                        const questionBlock: LayoutBlock = {
-                            type: "input",
-                            label: {
-                                text: value + " Question",
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Enter question for multiple choice",
-                                },
-                                blockId: value+"question"+"Block",
-                                actionId: value+"question"+"Action",
-                                appId: this.app.getID(),
-                            },
-                        };
-                        const optionBlock: LayoutBlock = {
-                            type: "input",
-                            label: {
-                                text: '',
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Option1,Option2,...",
-                                },
-                                blockId: value+"option"+"Block",
-                                actionId: value+"option"+"Action",
-                                appId: this.app.getID(),
-                            },
-                        };
+                        // const questionBlock: LayoutBlock = {
+                        //     type: "input",
+                        //     label: {
+                        //         text: value + " Question",
+                        //         type: TextTypes.PLAIN_TEXT,
+                        //     },
+                        //     element: {
+                        //         type: "plain_text_input",
+                        //         placeholder: {
+                        //             type: TextTypes.PLAIN_TEXT,
+                        //             text: "Enter question for multiple choice",
+                        //         },
+                        //         blockId: value+"question"+"Block",
+                        //         actionId: value+"question"+"Action",
+                        //         appId: this.app.getID(),
+                        //     },
+                        // };
+                        // const optionBlock: LayoutBlock = {
+                        //     type: "input",
+                        //     label: {
+                        //         text: '',
+                        //         type: TextTypes.PLAIN_TEXT,
+                        //     },
+                        //     element: {
+                        //         type: "plain_text_input",
+                        //         placeholder: {
+                        //             type: TextTypes.PLAIN_TEXT,
+                        //             text: "Option1,Option2,...",
+                        //         },
+                        //         blockId: value+"option"+"Block",
+                        //         actionId: value+"option"+"Action",
+                        //         appId: this.app.getID(),
+                        //     },
+                        // };
 
-                        questionBlocks.push(questionBlock, optionBlock);
+                        // questionBlocks.push(questionBlock, optionBlock);
+                        //
+                        const block: LayoutBlock = {
+                            type: "preview", // the preview block
+                            description: [
+                                {
+                                    type: "plain_text",
+                                    text: "Description of preview",
+                                },
+                            ],
+                            title: [
+                                {
+                                    type: "plain_text",
+                                    text: "Title of preview",
+                                },
+                            ],
+                        }
+                        questionBlocks.push(block);
                     } else {
                         break;
                     }
