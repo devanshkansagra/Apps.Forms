@@ -1,4 +1,3 @@
-import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { SurveysApp } from "../../SurveysApp";
 import {
     IHttp,
@@ -8,6 +7,7 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { CreateFormModal } from "../modals/CreateFormModal";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
+import { QuestionPersistence } from "../persistence/questionPersistence";
 
 export async function createForm(
     app: SurveysApp,
@@ -20,6 +20,8 @@ export async function createForm(
     threadId: string | undefined,
 ) {
     if (triggerId) {
+
+        // Create the form modal
         const modal = await CreateFormModal({
             read,
             modify,
@@ -30,10 +32,9 @@ export async function createForm(
             id: app.getID(),
         });
 
-        if (triggerId) {
-            await modify
-                .getUiController()
-                .openSurfaceView(modal, { triggerId }, sender);
-        }
+        // Open the modal
+        await modify
+            .getUiController()
+            .openSurfaceView(modal, { triggerId }, sender);
     }
 }

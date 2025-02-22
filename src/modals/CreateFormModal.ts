@@ -10,6 +10,7 @@ import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
 import { ModalEnum } from "../enums/ModalEnum";
 import { ElementEnum } from "../enums/ElementEnum";
+import { QuestionPersistence } from "../persistence/questionPersistence";
 
 export async function CreateFormModal({
     read,
@@ -19,7 +20,6 @@ export async function CreateFormModal({
     triggerId,
     threadId,
     id,
-    questionElement,
 }: {
     read: IRead;
     modify: IModify;
@@ -28,10 +28,8 @@ export async function CreateFormModal({
     triggerId: string | undefined;
     threadId: string | undefined;
     id: string;
-    questionElement?: any,
 }): Promise<IUIKitSurfaceViewParam> {
-    const blocks: LayoutBlock[] = [];
-
+    let blocks: LayoutBlock[] = [];
     blocks.push(
         {
             type: "input",
@@ -70,27 +68,53 @@ export async function CreateFormModal({
         },
     );
 
-    if(questionElement) {
-        blocks.push(...questionElement);
-    }
-
     blocks.push({
-        type: 'section',
+        type: "section",
         accessory: {
-            type: 'button',
-            text: {
-                type: TextTypes.PLAIN_TEXT,
-                text: "Add Question",
-            },
-            blockId: ElementEnum.ADD_QUESTION_BLOCK,
-            actionId: ElementEnum.ADD_Question_ACTION,
+            type: "overflow",
+            actionId: ElementEnum.QUESTION_TYPE_ACTION,
+            options: [
+                {
+                    value: "Short Answer",
+                    text: {
+                        type: TextTypes.PLAIN_TEXT,
+                        text: "Short Answer",
+                    },
+                },
+                {
+                    value: "Paragraph",
+                    text: {
+                        type: TextTypes.PLAIN_TEXT,
+                        text: "Paragraph",
+                    },
+                },
+                {
+                    value: "Multiple Choice",
+                    text: {
+                        type: TextTypes.PLAIN_TEXT,
+                        text: "Multiple Choice",
+                    },
+                },
+            ],
             appId: id,
-        }
-    })
+            blockId: ElementEnum.QUESTION_TYPE_BLOCK,
+        },
+    });
 
+    const questionPersistence = new QuestionPersistence(
+        persis,
+        read.getPersistenceReader(),
+    );
+    const questionBlocks = await questionPersistence.getQuestionBlocks(id);
+    if (questionBlocks) {
+        if (questionBlocks.length > 0) {
+            blocks.push(...questionBlocks);
+        }
+
+    }
     blocks.push({
-        type: 'divider',
-    })
+        type: "divider",
+    });
 
     return {
         type: UIKitSurfaceType.MODAL,
@@ -105,6 +129,16 @@ export async function CreateFormModal({
             text: {
                 type: TextTypes.PLAIN_TEXT,
                 text: "Create",
+            },
+            blockId: "",
+            actionId: "",
+            appId: id,
+        },
+        close: {
+            type: "button",
+            text: {
+                type: TextTypes.PLAIN_TEXT,
+                text: "Close",
             },
             blockId: "",
             actionId: "",

@@ -13,9 +13,12 @@ import { ElementEnum } from "../enums/ElementEnum";
 import { AddQuestionModal } from "../modals/AddQuestionModal";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
+import { CreateFormModal } from "../modals/CreateFormModal";
+import { QuestionPersistence } from "../persistence/questionPersistence";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
+
     constructor(
         protected readonly app: SurveysApp,
         context: UIKitBlockInteractionContext,
@@ -28,7 +31,7 @@ export class ExecuteBlockActionHandler {
     }
 
     public async execute(): Promise<IUIKitResponse> {
-        const { actionId, triggerId, user, value } =
+        const { actionId, triggerId, user, value, threadId } =
             this.context.getInteractionData();
 
         try {
@@ -50,52 +53,115 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
                 case ElementEnum.QUESTION_TYPE_ACTION: {
-                    if (value === "Multiple Choice") {
-                        const optionsBlock: LayoutBlock = {
+                    const questionPersistence = new QuestionPersistence(
+                        this.persistence,
+                        this.read.getPersistenceReader(),
+                    );
+                    const questionBlocks =
+                        await questionPersistence.getQuestionBlocks(
+                            this.app.getID(),
+                        );
+
+                    if (value === "Short Answer") {
+                        let block: LayoutBlock;
+                        block = {
                             type: "input",
                             label: {
+                                text: value + " Question",
                                 type: TextTypes.PLAIN_TEXT,
-                                text: "Add Options*",
                             },
                             element: {
                                 type: "plain_text_input",
                                 placeholder: {
                                     type: TextTypes.PLAIN_TEXT,
-                                    text: "Option1, Option2,....",
+                                    text: "Enter question for short answers",
                                 },
-                                blockId: ElementEnum.OPTIONS_BLOCK,
-                                actionId: ElementEnum.OPTIONS_ACTION,
+                                blockId: value+"Block",
+                                actionId: value+"Action",
                                 appId: this.app.getID(),
                             },
                         };
-                        if (triggerId) {
-                            const modal = await AddQuestionModal({
-                                read: this.read,
-                                http: this.http,
-                                persis: this.persistence,
-                                modify: this.modify,
-                                id: this.app.getID(),
-                                optionBlock: optionsBlock,
-                            });
+                        questionBlocks.push(block);
+                    } else if (value === "Paragraph") {
+                        let block: LayoutBlock;
+                        block = {
+                            type: "input",
+                            label: {
+                                text: value + " Question",
+                                type: TextTypes.PLAIN_TEXT,
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    type: TextTypes.PLAIN_TEXT,
+                                    text: "Enter question for paragraphs",
+                                },
+                                blockId: value+"Block",
+                                actionId: value+"Action",
+                                appId: this.app.getID(),
+                            },
+                        };
+                        questionBlocks.push(block);
+                    } else if (value === "Multiple Choice") {
+                        const questionBlock: LayoutBlock = {
+                            type: "input",
+                            label: {
+                                text: value + " Question",
+                                type: TextTypes.PLAIN_TEXT,
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    type: TextTypes.PLAIN_TEXT,
+                                    text: "Enter question for multiple choice",
+                                },
+                                blockId: value+"question"+"Block",
+                                actionId: value+"question"+"Action",
+                                appId: this.app.getID(),
+                            },
+                        };
+                        const optionBlock: LayoutBlock = {
+                            type: "input",
+                            label: {
+                                text: '',
+                                type: TextTypes.PLAIN_TEXT,
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    type: TextTypes.PLAIN_TEXT,
+                                    text: "Option1,Option2,...",
+                                },
+                                blockId: value+"option"+"Block",
+                                actionId: value+"option"+"Action",
+                                appId: this.app.getID(),
+                            },
+                        };
 
-                            await this.modify
-                                .getUiController()
-                                .updateSurfaceView(modal, { triggerId }, user);
-                        }
+                        questionBlocks.push(questionBlock, optionBlock);
                     } else {
-                        if (triggerId) {
-                            const modal = await AddQuestionModal({
-                                read: this.read,
-                                http: this.http,
-                                persis: this.persistence,
-                                modify: this.modify,
-                                id: this.app.getID(),
-                            });
+                        break;
+                    }
 
-                            await this.modify
-                                .getUiController()
-                                .updateSurfaceView(modal, { triggerId }, user);
-                        }
+                    await questionPersistence.saveQuestionBlocks(
+                        this.app.getID(),
+                        questionBlocks,
+                    );
+
+                    const modal = await CreateFormModal({
+                        read: this.read,
+                        modify: this.modify,
+                        http: this.http,
+                        persis: this.persistence,
+                        triggerId: triggerId,
+                        threadId: threadId,
+                        id: this.app.getID(),
+                    });
+
+                    if (triggerId) {
+                        await this.modify
+                            .getUiController()
+                            .updateSurfaceView(modal, { triggerId }, user);
                     }
                     break;
                 }
@@ -103,7 +169,9 @@ export class ExecuteBlockActionHandler {
                     console.log("Default executed");
                 }
             }
-        } catch (error) {}
+        } catch (error) {
+            console.warn("ExecuteBlockActionHandler Error:", error);
+        }
         return {
             success: true,
         };

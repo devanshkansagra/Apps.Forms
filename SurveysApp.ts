@@ -15,10 +15,12 @@ import { settings } from "./src/settings/settings";
 import {
     IUIKitResponse,
     UIKitBlockInteractionContext,
+    UIKitViewCloseInteractionContext,
     UIKitViewSubmitInteractionContext,
 } from "@rocket.chat/apps-engine/definition/uikit";
 import { ExecuteViewSubmitHandler } from "./src/handlers/ExecuteViewSubmitHandler";
 import { ExecuteBlockActionHandler } from "./src/handlers/ExecuteBlockActionHandler";
+import { ExecuteViewClosedHandler } from "./src/handlers/ExecuteViewClosedHandler";
 
 export class SurveysApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -73,6 +75,25 @@ export class SurveysApp extends App {
             http,
             persistence,
             modify,
+        );
+
+        return await handler.execute();
+    }
+
+    public async executeViewClosedHandler(
+        read: IRead,
+        http: IHttp,
+        persistence: IPersistence,
+        modify: IModify,
+        context: UIKitViewCloseInteractionContext
+    ) {
+        const handler = new ExecuteViewClosedHandler(
+            this,
+            read,
+            http,
+            persistence,
+            modify,
+            context
         );
 
         return await handler.execute();
