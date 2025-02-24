@@ -2,15 +2,11 @@ import {
     ISetting,
     SettingType,
 } from "@rocket.chat/apps-engine/definition/settings";
-export enum OAuthSetting {
-    API_KEY = "google-cloud-api-key",
-    CLIENT_ID = "google-forms-client-id",
-    CLIENT_SECRET = "google-forms-secret",
-}
+import { OAuthSetting } from "../enums/OAuthSettingEnum";
 
 export const settings: ISetting[] = [
     {
-        id: OAuthSetting.API_KEY,
+        id: 'api-key',
         type: SettingType.STRING,
         packageValue: "",
         required: true,
@@ -22,7 +18,7 @@ export const settings: ISetting[] = [
         multiline: false,
     },
     {
-        id: OAuthSetting.CLIENT_ID,
+        id: 'client-id',
         type: SettingType.STRING,
         packageValue: "",
         required: true,
@@ -30,18 +26,6 @@ export const settings: ISetting[] = [
         section: "CredentialSettings",
         i18nLabel: "Client ID",
         i18nPlaceholder: "Client ID",
-        hidden: false,
-        multiline: false,
-    },
-    {
-        id: OAuthSetting.CLIENT_SECRET,
-        type: SettingType.PASSWORD,
-        packageValue: "",
-        required: true,
-        public: false,
-        section: "CredentialSettings",
-        i18nLabel: "Client Secret",
-        i18nPlaceholder: "Client Secret",
         hidden: false,
         multiline: false,
     },

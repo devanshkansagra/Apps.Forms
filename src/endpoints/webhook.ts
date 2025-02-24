@@ -1,6 +1,4 @@
-// endpoint.ts
 import {
-    HttpStatusCode,
     IModify,
     IRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
@@ -10,7 +8,6 @@ import {
     IApiRequest,
     IApiResponse,
 } from "@rocket.chat/apps-engine/definition/api";
-import { SurveysApp } from "../../SurveysApp";
 
 export class WebhookEndpoint extends ApiEndpoint {
     public path = "webhook";
@@ -21,6 +18,6 @@ export class WebhookEndpoint extends ApiEndpoint {
         modify: IModify,
     ): Promise<IApiResponse> {
 
-        return this.success();
+        return this.success("Authorization Successful");
     }
 }

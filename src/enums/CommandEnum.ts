@@ -1,3 +1,4 @@
 export enum CommandEnum {
-    CREATE = "create"
+    CREATE = "create",
+    LOGIN = "login",
 }

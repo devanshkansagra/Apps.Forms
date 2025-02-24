@@ -13,4 +13,6 @@ export enum ElementEnum {
     OPTIONS_ACTION = 'options-action',
     QUESTION_BLOCK = 'question-block',
     QUESTION_ACTION = 'question-action',
+    LOGIN_BUTTON_BLOCK = 'login-button-block',
+    LOGIN_BUTTON_ACTION = 'login-button-action',
 }

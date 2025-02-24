@@ -18,6 +18,7 @@ import {
     UIKitViewCloseInteractionContext,
     UIKitViewSubmitInteractionContext,
 } from "@rocket.chat/apps-engine/definition/uikit";
+import { IOAuth2Client } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 import { ExecuteViewSubmitHandler } from "./src/handlers/ExecuteViewSubmitHandler";
 import { ExecuteBlockActionHandler } from "./src/handlers/ExecuteBlockActionHandler";
 import { ExecuteViewClosedHandler } from "./src/handlers/ExecuteViewClosedHandler";
@@ -26,16 +27,30 @@ import {
     ApiVisibility,
 } from "@rocket.chat/apps-engine/definition/api";
 import { WebhookEndpoint } from "./src/endpoints/webhook";
+import { OAuth2Service } from "./src/oauth2/OAuth2Service";
 
 export class SurveysApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }
 
+    public oAuth2ClientInstance: OAuth2Service;
     public async initialize(
         configurationExtend: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
+        const oAuth2Config = {
+            alias: "forms-integration",
+            accessTokenUri: "https://oauth2.googleapis.com/token",
+            authUri: "https://accounts.google.com/o/oauth2/v2/auth",
+            refreshTokenUri: "https://oauth2.googleapis.com/token",
+            revokeTokenUri: "https://oauth2.googleapis.com/revoke",
+            defaultScopes: ["email"],
+        };
+
+        this.oAuth2ClientInstance = new OAuth2Service(this, oAuth2Config);
+        await this.oAuth2ClientInstance.setup(configurationExtend);
+
         await configurationExtend.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
         );

@@ -14,6 +14,7 @@ import {
 import { sendNotification } from "../helpers/message";
 import { CommandEnum } from "../enums/CommandEnum";
 import { createForm } from "../handlers/CreateFormHandler";
+import { handleLogin } from "../handlers/AuthorizationHandler";
 
 export class CommandUtility implements ICommandUtility {
     app: SurveysApp;
@@ -52,6 +53,17 @@ export class CommandUtility implements ICommandUtility {
                         this.persis,
                         this.triggerId,
                         this.threadId,
+                    );
+                    break;
+                }
+                case CommandEnum.LOGIN: {
+                    await handleLogin(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.persis,
                     );
                     break;
                 }

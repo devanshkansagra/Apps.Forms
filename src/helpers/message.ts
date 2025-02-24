@@ -1,6 +1,7 @@
 import { IModify, IRead } from "@rocket.chat/apps-engine/definition/accessors";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
+import { LayoutBlock } from "@rocket.chat/ui-kit";
 
 export async function sendNotification(
     read: IRead,
@@ -8,15 +9,20 @@ export async function sendNotification(
     sender: IUser,
     room: IRoom,
     message: any,
+    blocks?: LayoutBlock[],
 ) {
-    const user = (await read.getUserReader().getAppUser()) as IUser;
-    const messageBuilder = modify
+    const appUser = (await read.getUserReader().getAppUser()) as IUser;
+
+    const msg = modify
         .getCreator()
         .startMessage()
-        .setSender(user)
+        .setSender(appUser)
         .setRoom(room)
-        .setGroupable(false)
         .setText(message);
 
-    return read.getNotifier().notifyUser(sender, messageBuilder.getMessage());
+    if (blocks) {
+        msg.setBlocks(blocks);
+    }
+
+    return read.getNotifier().notifyUser(sender, msg.getMessage());
 }
