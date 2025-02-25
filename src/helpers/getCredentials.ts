@@ -3,6 +3,8 @@ import { IRead } from "@rocket.chat/apps-engine/definition/accessors";
 export async function getCredentials(
     read: IRead,
 ) {
+
+    const settings = read.getEnvironmentReader().getServerSettings();
     const clientId = (await read
         .getEnvironmentReader()
         .getSettings()
@@ -10,14 +12,16 @@ export async function getCredentials(
 
     const clientSecret = (await read
         .getEnvironmentReader()
-        .getSettings()
+        .getServerSettings()
         .getValueById('google-cloud-oauth-client-secret'))
+
+    const redirectURL = (await read.getEnvironmentReader().getSettings().getValueById('google-cloud-callback'));
 
     const APIKey = (await read
         .getEnvironmentReader()
-        .getSettings()
+        .getServerSettings()
         .getValueById('api-key'))
 
 
-    return { clientId, APIKey, clientSecret };
+    return { clientId, APIKey, clientSecret, redirectURL, settings };
 }

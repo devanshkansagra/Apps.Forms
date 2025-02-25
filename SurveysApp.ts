@@ -29,6 +29,7 @@ import {
 import { WebhookEndpoint } from "./src/endpoints/webhook";
 import { OAuth2Service } from "./src/oauth2/OAuth2Service";
 import { OAuthURL } from "./src/enums/OAuthSettingEnum";
+import { SDK } from "./src/lib/SDK";
 
 export class SurveysApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -36,22 +37,21 @@ export class SurveysApp extends App {
     }
 
     public oAuth2ClientInstance: OAuth2Service;
+    public sdk: SDK;
     public oAuth2Config = {
         alias: "google-cloud",
-        accessTokenUri: "https://oauth2.googleapis.com/token",
-        authUri: "https://accounts.google.com/o/oauth2/v2/auth",
-        refreshTokenUri: "https://oauth2.googleapis.com/token",
-        revokeTokenUri: "https://oauth2.googleapis.com/revoke",
-        defaultScopes: [
-            "email",
-        ],
+        accessTokenUri: OAuthURL.ACCESSS_TOKEN_URI,
+        authUri: OAuthURL.AUTH_URI,
+        refreshTokenUri: OAuthURL.REFRESH_TOKEN_URI,
+        revokeTokenUri: OAuthURL.REVOKE_TOKEN_URI,
+        defaultScopes: ["email"],
     };
     public async initialize(
         configurationExtend: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
 
-
+        this.oAuth2ClientInstance = new OAuth2Service(this, this.oAuth2Config);
         await configurationExtend.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
         );
@@ -61,14 +61,17 @@ export class SurveysApp extends App {
                 configurationExtend.settings.provideSetting(setting);
             }),
         );
-        this.oAuth2ClientInstance = new OAuth2Service(this, this.oAuth2Config);
-        await this.oAuth2ClientInstance.setup(configurationExtend);
 
         await configurationExtend.api.provideApi({
             visibility: ApiVisibility.PUBLIC,
             security: ApiSecurity.UNSECURE,
             endpoints: [new WebhookEndpoint(this)],
         });
+    }
+
+    public async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
+        await this.oAuth2ClientInstance.setup(configuration);
+        this.sdk = new SDK(this.getAccessors().http);
     }
 
     public async executeViewSubmitHandler(
