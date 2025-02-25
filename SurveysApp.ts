@@ -28,6 +28,7 @@ import {
 } from "@rocket.chat/apps-engine/definition/api";
 import { WebhookEndpoint } from "./src/endpoints/webhook";
 import { OAuth2Service } from "./src/oauth2/OAuth2Service";
+import { OAuthURL } from "./src/enums/OAuthSettingEnum";
 
 export class SurveysApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -35,21 +36,21 @@ export class SurveysApp extends App {
     }
 
     public oAuth2ClientInstance: OAuth2Service;
+    public oAuth2Config = {
+        alias: "google-cloud",
+        accessTokenUri: "https://oauth2.googleapis.com/token",
+        authUri: "https://accounts.google.com/o/oauth2/v2/auth",
+        refreshTokenUri: "https://oauth2.googleapis.com/token",
+        revokeTokenUri: "https://oauth2.googleapis.com/revoke",
+        defaultScopes: [
+            "email",
+        ],
+    };
     public async initialize(
         configurationExtend: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
-        const oAuth2Config = {
-            alias: "forms-integration",
-            accessTokenUri: "https://oauth2.googleapis.com/token",
-            authUri: "https://accounts.google.com/o/oauth2/v2/auth",
-            refreshTokenUri: "https://oauth2.googleapis.com/token",
-            revokeTokenUri: "https://oauth2.googleapis.com/revoke",
-            defaultScopes: ["email"],
-        };
 
-        this.oAuth2ClientInstance = new OAuth2Service(this, oAuth2Config);
-        await this.oAuth2ClientInstance.setup(configurationExtend);
 
         await configurationExtend.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
@@ -60,6 +61,8 @@ export class SurveysApp extends App {
                 configurationExtend.settings.provideSetting(setting);
             }),
         );
+        this.oAuth2ClientInstance = new OAuth2Service(this, this.oAuth2Config);
+        await this.oAuth2ClientInstance.setup(configurationExtend);
 
         await configurationExtend.api.provideApi({
             visibility: ApiVisibility.PUBLIC,

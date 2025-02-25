@@ -1,18 +1,17 @@
-import { IModify, IRead } from "@rocket.chat/apps-engine/definition/accessors";
-import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
-import { IUser } from "@rocket.chat/apps-engine/definition/users";
-import { OAuthSetting } from "../enums/OAuthSettingEnum";
+import { IRead } from "@rocket.chat/apps-engine/definition/accessors";
 
 export async function getCredentials(
     read: IRead,
-    modify: IModify,
-    user: IUser,
-    room: IRoom,
 ) {
     const clientId = (await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById('client-id'))
+        .getValueById('google-cloud-oauth-client-id'))
+
+    const clientSecret = (await read
+        .getEnvironmentReader()
+        .getSettings()
+        .getValueById('google-cloud-oauth-client-secret'))
 
     const APIKey = (await read
         .getEnvironmentReader()
@@ -20,5 +19,5 @@ export async function getCredentials(
         .getValueById('api-key'))
 
 
-    return { clientId, APIKey };
+    return { clientId, APIKey, clientSecret };
 }

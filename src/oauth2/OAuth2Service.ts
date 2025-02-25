@@ -90,50 +90,29 @@ export class OAuth2Service {
 
     public async handleOAuthCallback(
         read: IRead,
-        modify: IModify,
-        room: IRoom,
-        user: IUser,
-        // code: string,
+        code: string,
         http: IHttp,
         persis: IPersistence,
     ): Promise<void> {
         try {
-            const { clientId } = await getCredentials(read, modify, user, room);
+            const { clientId, clientSecret } = await getCredentials(read)
             const response = await http.post(this.config.accessTokenUri, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-                data: `client_id=${clientId}&redirect_uri=${this.config.redirectUri}&&response_type=code&scope=email`,
+                data: `code=${code}&client_id=${clientId}&redirect_uri=${this.config.redirectUri}&&response_type=code&scope=email`,
             });
 
             if (response.statusCode === 200 && response.data) {
                 const tokenData = response.data;
-                this.app
-                    .getLogger()
-                    .debug(
-                        `Token data to be stored for user ${user.username}:`,
-                        tokenData,
-                    );
-                const association = new RocketChatAssociationRecord(
-                    RocketChatAssociationModel.USER,
-                    user.id,
-                );
-                await persis.updateByAssociation(association, tokenData, true);
-                this.app
-                    .getLogger()
-                    .info(`Access token stored for user: ${user.username}`);
+                console.log(tokenData);
             } else {
                 this.app
                     .getLogger()
                     .error(`Failed to get access token: ${response.content}`);
             }
         } catch (error) {
-            this.app
-                .getLogger()
-                .error(
-                    `Failed to handle OAuth callback for user: ${user.username}`,
-                    error,
-                );
+            console.log(error);
         }
     }
 }
