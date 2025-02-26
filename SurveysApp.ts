@@ -71,7 +71,7 @@ export class SurveysApp extends App {
 
     public async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
         await this.oAuth2ClientInstance.setup(configuration);
-        this.sdk = new SDK(this.getAccessors().http);
+        this.sdk = new SDK(this.getAccessors().http, this);
     }
 
     public async executeViewSubmitHandler(

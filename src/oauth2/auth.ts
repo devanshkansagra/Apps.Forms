@@ -10,6 +10,7 @@ import { OAuth2Service } from "./OAuth2Service";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { ElementEnum } from "../enums/ElementEnum";
 import { sendNotification } from "../helpers/message";
+import { TextTypes } from "../enums/TextTypes";
 
 export async function authorize(
     app: SurveysApp,
@@ -22,27 +23,42 @@ export async function authorize(
     try {
         const url =
             await app.oAuth2ClientInstance.getUserAuthorizationUrl(user);
-        const button: LayoutBlock = {
-            type: "actions",
-            elements: [
-                {
-                    type: "button",
-                    actionId: ElementEnum.LOGIN_BUTTON_ACTION,
-                    appId: app.getID(),
-                    blockId: ElementEnum.LOGIN_BUTTON_BLOCK,
-                    text: {
-                        type: "plain_text",
-                        text: "Login with Google",
-                    },
-                    style: "primary",
-                    url: url,
+        const blocks: LayoutBlock[] = [
+            {
+                type: "section",
+                text: {
+                    type: TextTypes.PLAIN_TEXT,
+                    text: "Click 👇 to Login with Google",
+                    emoji: true,
                 },
-            ],
-        };
-
-        await sendNotification(read, modify, user, room, "Login with Google", [
-            button,
-        ]);
+            },
+            {
+                type: "actions",
+                elements: [
+                    {
+                        type: "button",
+                        actionId: ElementEnum.LOGIN_BUTTON_ACTION,
+                        appId: app.getID(),
+                        blockId: ElementEnum.LOGIN_BUTTON_BLOCK,
+                        text: {
+                            type: "plain_text",
+                            text: "Login with Google",
+                            emoji: true,
+                        },
+                        style: "primary",
+                        url: url,
+                    },
+                ],
+            },
+        ];
+        await sendNotification(
+            read,
+            modify,
+            user,
+            room,
+            "Login with Google",
+            blocks,
+        );
     } catch (error: any) {
         console.log(error);
     }

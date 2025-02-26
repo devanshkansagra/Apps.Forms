@@ -25,7 +25,6 @@ export class WebhookEndpoint extends ApiEndpoint {
         persis: IPersistence,
     ): Promise<IApiResponse> {
         const { code, state, error } = request.query;
-        console.log(code);
         const user = await read.getUserReader().getById(state);
         if (!user) {
             return {
@@ -35,11 +34,11 @@ export class WebhookEndpoint extends ApiEndpoint {
         }
         const sdk = new SDK(http);
         const response = await sdk.createToken(read, code, http, user, persis);
-        if (response.status != 200) {
+        if(response.statusCode !== 200) {
             return {
-                status: 400,
-                content: "Something went wrong: Received status " + response.status
-            };
+                status: response.statusCode,
+                content: JSON.parse(response.content)
+            }
         }
         return { status: 200, content: "Authorized successfully" };
     }

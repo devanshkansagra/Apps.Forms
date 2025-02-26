@@ -87,32 +87,4 @@ export class OAuth2Service {
     ): Promise<void> {
         await this.oauthClient.revokeUserAccessToken(user, persis);
     }
-
-    public async handleOAuthCallback(
-        read: IRead,
-        code: string,
-        http: IHttp,
-        persis: IPersistence,
-    ): Promise<void> {
-        try {
-            const { clientId, clientSecret } = await getCredentials(read)
-            const response = await http.post(this.config.accessTokenUri, {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                data: `code=${code}&client_id=${clientId}&redirect_uri=${this.config.redirectUri}&&response_type=code&scope=email`,
-            });
-
-            if (response.statusCode === 200 && response.data) {
-                const tokenData = response.data;
-                console.log(tokenData);
-            } else {
-                this.app
-                    .getLogger()
-                    .error(`Failed to get access token: ${response.content}`);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
 }

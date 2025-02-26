@@ -10,7 +10,6 @@ import {
     IRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { ElementEnum } from "../enums/ElementEnum";
-import { AddQuestionModal } from "../modals/AddQuestionModal";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
 import { CreateFormModal } from "../modals/CreateFormModal";
@@ -36,22 +35,6 @@ export class ExecuteBlockActionHandler {
 
         try {
             switch (actionId) {
-                case ElementEnum.ADD_Question_ACTION: {
-                    const modal = await AddQuestionModal({
-                        read: this.read,
-                        http: this.http,
-                        persis: this.persistence,
-                        modify: this.modify,
-                        id: this.app.getID(),
-                    });
-
-                    if (triggerId) {
-                        await this.modify
-                            .getUiController()
-                            .openSurfaceView(modal, { triggerId }, user);
-                    }
-                    break;
-                }
                 case ElementEnum.QUESTION_TYPE_ACTION: {
                     const questionPersistence = new QuestionPersistence(
                         this.persistence,
@@ -103,59 +86,43 @@ export class ExecuteBlockActionHandler {
                         };
                         questionBlocks.push(block);
                     } else if (value === "Multiple Choice") {
-                        // const questionBlock: LayoutBlock = {
-                        //     type: "input",
-                        //     label: {
-                        //         text: value + " Question",
-                        //         type: TextTypes.PLAIN_TEXT,
-                        //     },
-                        //     element: {
-                        //         type: "plain_text_input",
-                        //         placeholder: {
-                        //             type: TextTypes.PLAIN_TEXT,
-                        //             text: "Enter question for multiple choice",
-                        //         },
-                        //         blockId: value+"question"+"Block",
-                        //         actionId: value+"question"+"Action",
-                        //         appId: this.app.getID(),
-                        //     },
-                        // };
-                        // const optionBlock: LayoutBlock = {
-                        //     type: "input",
-                        //     label: {
-                        //         text: '',
-                        //         type: TextTypes.PLAIN_TEXT,
-                        //     },
-                        //     element: {
-                        //         type: "plain_text_input",
-                        //         placeholder: {
-                        //             type: TextTypes.PLAIN_TEXT,
-                        //             text: "Option1,Option2,...",
-                        //         },
-                        //         blockId: value+"option"+"Block",
-                        //         actionId: value+"option"+"Action",
-                        //         appId: this.app.getID(),
-                        //     },
-                        // };
+                        const questionBlock: LayoutBlock = {
+                            type: "input",
+                            label: {
+                                text: value + " Question",
+                                type: TextTypes.PLAIN_TEXT,
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    type: TextTypes.PLAIN_TEXT,
+                                    text: "Enter question for multiple choice",
+                                },
+                                blockId: value+"question"+"Block",
+                                actionId: value+"question"+"Action",
+                                appId: this.app.getID(),
+                            },
+                        };
+                        const optionBlock: LayoutBlock = {
+                            type: "input",
+                            label: {
+                                text: '',
+                                type: TextTypes.PLAIN_TEXT,
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    type: TextTypes.PLAIN_TEXT,
+                                    text: "Option1,Option2,...",
+                                },
+                                blockId: value+"option"+"Block",
+                                actionId: value+"option"+"Action",
+                                appId: this.app.getID(),
+                            },
+                        };
 
-                        // questionBlocks.push(questionBlock, optionBlock);
-                        //
-                        const block: LayoutBlock = {
-                            type: "preview", // the preview block
-                            description: [
-                                {
-                                    type: "plain_text",
-                                    text: "Description of preview",
-                                },
-                            ],
-                            title: [
-                                {
-                                    type: "plain_text",
-                                    text: "Title of preview",
-                                },
-                            ],
-                        }
-                        questionBlocks.push(block);
+                        questionBlocks.push(questionBlock, optionBlock);
+
                     } else {
                         break;
                     }
