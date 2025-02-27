@@ -30,8 +30,11 @@ export class WebhookEndpoint extends ApiEndpoint {
         persis: IPersistence,
     ): Promise<IApiResponse> {
         const { code, state, error } = request.query;
-        const accessToken = await this.app.oAuth2ClientInstance.getAccessTokenForUser(await read.getUserReader().getById(state));
-        console.log(accessToken);
+        // const accessToken = await this.app.oAuth2ClientInstance.getAccessTokenForUser(await read.getUserReader().getById(state));
+        // console.log("Token " + JSON.stringify(accessToken));
+
+        const sdk = new SDK(http, this.app);
+        await sdk.createToken(read, code, http, await read.getUserReader().getById(state), persis)
         return { status: 200, content: "Authorized successfully" };
     }
 }
