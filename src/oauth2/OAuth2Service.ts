@@ -1,4 +1,4 @@
-import { IOAuth2Client } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
+import { IAuthData, IOAuth2Client } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 import { createOAuth2Client } from "@rocket.chat/apps-engine/definition/oauth2/OAuth2";
 import {
     IConfigurationExtend,
@@ -38,41 +38,8 @@ export class OAuth2Service {
         return url.toString();
     }
 
-    public async getAccessTokenForUser(user: IUser, read: IRead): Promise<any> {
-        try {
-            const association = new RocketChatAssociationRecord(
-                RocketChatAssociationModel.USER,
-                user.id,
-            );
-            const [tokenData] = await read
-                .getPersistenceReader()
-                .readByAssociation(association);
-            if (tokenData) {
-                this.app
-                    .getLogger()
-                    .debug(
-                        `Token data retrieved for user ${user.username}:`,
-                        tokenData,
-                    );
-                this.app
-                    .getLogger()
-                    .info(`Access token retrieved for user: ${user.username}`);
-                return tokenData;
-            } else {
-                this.app
-                    .getLogger()
-                    .warn(`No access token found for user: ${user.username}`);
-                return null;
-            }
-        } catch (error) {
-            this.app
-                .getLogger()
-                .error(
-                    `Failed to get access token for user: ${user.username}`,
-                    error,
-                );
-            throw error;
-        }
+    public async getAccessTokenForUser(user: IUser): Promise<IAuthData> {
+        return await this.oauthClient.getAccessTokenForUser(user) as IAuthData;
     }
     public async refreshUserAccessToken(
         user: IUser,

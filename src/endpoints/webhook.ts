@@ -13,9 +13,14 @@ import {
 import { getCredentials } from "../helpers/getCredentials";
 import { OAuthURL } from "../enums/OAuthSettingEnum";
 import { SDK } from "../lib/SDK";
+import { SurveysApp } from "../../SurveysApp";
 
 export class WebhookEndpoint extends ApiEndpoint {
     public path = "google-cloud-callback";
+
+    constructor(public readonly app: SurveysApp) {
+        super(app);
+    }
     public async get(
         request: IApiRequest,
         endpoint: IApiEndpointInfo,
@@ -25,21 +30,8 @@ export class WebhookEndpoint extends ApiEndpoint {
         persis: IPersistence,
     ): Promise<IApiResponse> {
         const { code, state, error } = request.query;
-        const user = await read.getUserReader().getById(state);
-        if (!user) {
-            return {
-                status: 404,
-                content: "User not found",
-            };
-        }
-        const sdk = new SDK(http);
-        const response = await sdk.createToken(read, code, http, user, persis);
-        if(response.statusCode !== 200) {
-            return {
-                status: response.statusCode,
-                content: JSON.parse(response.content)
-            }
-        }
+        const accessToken = await this.app.oAuth2ClientInstance.getAccessTokenForUser(await read.getUserReader().getById(state));
+        console.log(accessToken);
         return { status: 200, content: "Authorized successfully" };
     }
 }

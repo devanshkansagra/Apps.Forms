@@ -21,8 +21,7 @@ export async function authorize(
     persistence: IPersistence,
 ) {
     try {
-        const url =
-            await app.oAuth2ClientInstance.getUserAuthorizationUrl(user);
+        const url = await app.oAuth2ClientInstance.getUserAuthorizationUrl(user);
         const blocks: LayoutBlock[] = [
             {
                 type: "section",
@@ -46,7 +45,7 @@ export async function authorize(
                             emoji: true,
                         },
                         style: "primary",
-                        url: url,
+                        url: url as any,
                     },
                 ],
             },

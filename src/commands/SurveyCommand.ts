@@ -17,8 +17,8 @@ import { CommandUtility } from "./CommandUtility";
 export class SurveyCommand implements ISlashCommand {
     constructor(private readonly app: SurveysApp) {}
     public command: string = "forms";
-    public i18nParamsExample: string = "";
-    public i18nDescription: string = "";
+    public i18nParamsExample: string = "cmd_example";
+    public i18nDescription: string = "cmd_example";
     public providesPreview: boolean = false;
 
     public async executor(

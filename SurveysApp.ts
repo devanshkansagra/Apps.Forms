@@ -18,7 +18,10 @@ import {
     UIKitViewCloseInteractionContext,
     UIKitViewSubmitInteractionContext,
 } from "@rocket.chat/apps-engine/definition/uikit";
-import { IOAuth2Client } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
+import {
+    IOAuth2Client,
+    IOAuth2ClientOptions,
+} from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 import { ExecuteViewSubmitHandler } from "./src/handlers/ExecuteViewSubmitHandler";
 import { ExecuteBlockActionHandler } from "./src/handlers/ExecuteBlockActionHandler";
 import { ExecuteViewClosedHandler } from "./src/handlers/ExecuteViewClosedHandler";
@@ -30,48 +33,45 @@ import { WebhookEndpoint } from "./src/endpoints/webhook";
 import { OAuth2Service } from "./src/oauth2/OAuth2Service";
 import { OAuthURL } from "./src/enums/OAuthSettingEnum";
 import { SDK } from "./src/lib/SDK";
+import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/IOAuthApp";
 
 export class SurveysApp extends App {
+    public oAuth2ClientInstance: OAuth2Service;
+    public sdk: SDK;
+    public oAuth2Config: IOAuth2ClientOptions;
+
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }
 
-    public oAuth2ClientInstance: OAuth2Service;
-    public sdk: SDK;
-    public oAuth2Config = {
-        alias: "google-cloud",
-        accessTokenUri: OAuthURL.ACCESSS_TOKEN_URI,
-        authUri: OAuthURL.AUTH_URI,
-        refreshTokenUri: OAuthURL.REFRESH_TOKEN_URI,
-        revokeTokenUri: OAuthURL.REVOKE_TOKEN_URI,
-        defaultScopes: ["email"],
-    };
     public async initialize(
-        configurationExtend: IConfigurationExtend,
+        configuration: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
-
+        this.oAuth2Config = {
+            alias: "google-cloud",
+            accessTokenUri: OAuthURL.ACCESSS_TOKEN_URI,
+            authUri: OAuthURL.AUTH_URI,
+            refreshTokenUri: OAuthURL.REFRESH_TOKEN_URI,
+            revokeTokenUri: OAuthURL.REVOKE_TOKEN_URI,
+            defaultScopes: [
+                "email",
+                "https://www.googleapis.com/auth/forms.body",
+                "https://www.googleapis.com/auth/forms.body.readonly",
+                "https://www.googleapis.com/auth/forms.responses.readonly",
+            ],
+        };
         this.oAuth2ClientInstance = new OAuth2Service(this, this.oAuth2Config);
-        await configurationExtend.slashCommands.provideSlashCommand(
+        await this.oAuth2ClientInstance.setup(configuration);
+        await configuration.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
         );
 
-        await Promise.all(
-            settings.map((setting) => {
-                configurationExtend.settings.provideSetting(setting);
-            }),
-        );
-
-        await configurationExtend.api.provideApi({
+        await configuration.api.provideApi({
             visibility: ApiVisibility.PUBLIC,
             security: ApiSecurity.UNSECURE,
             endpoints: [new WebhookEndpoint(this)],
         });
-    }
-
-    public async extendConfiguration(configuration: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
-        await this.oAuth2ClientInstance.setup(configuration);
-        this.sdk = new SDK(this.getAccessors().http, this);
     }
 
     public async executeViewSubmitHandler(
