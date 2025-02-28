@@ -56,18 +56,18 @@ export class ExecuteViewSubmitHandler {
                         },
                     };
 
-                    const response = await this.http.post(
-                        "https://forms.googleapis.com/v1/forms",
-                        {
-                            headers: {
-                                Authorization: `Bearer ya29.a0AeXRPp5o_o1E35qWxjkAogS2s5DcwcW6jPLIQUEuYiaurLEUds93GYM49oA0Wo6egFgXDINa1UPS9468i2UgOUczGhsId41J482lve6ojQ5BdBU5bxnNZ8M-r2E7cyakCSCruLz1_bGgAYVBKaJif9VwYc3bbqde7I6H-WYraCgYKASUSARMSFQHGX2MimZyRsjbEAgC2vMbnO2lmdQ0175`,
-                                "Content-Type": "application/json",
-                            },
-                            data: formData,
-                        },
-                    );
+                    // const response = await this.http.post(
+                    //     "https://forms.googleapis.com/v1/forms",
+                    //     {
+                    //         headers: {
+                    //             Authorization: `Bearer ya29.a0AeXRPp5o_o1E35qWxjkAogS2s5DcwcW6jPLIQUEuYiaurLEUds93GYM49oA0Wo6egFgXDINa1UPS9468i2UgOUczGhsId41J482lve6ojQ5BdBU5bxnNZ8M-r2E7cyakCSCruLz1_bGgAYVBKaJif9VwYc3bbqde7I6H-WYraCgYKASUSARMSFQHGX2MimZyRsjbEAgC2vMbnO2lmdQ0175`,
+                    //             "Content-Type": "application/json",
+                    //         },
+                    //         data: formData,
+                    //     },
+                    // );
 
-                    console.log(response);
+                    // console.log(response);
 
                     await questionPersistence.deleteQuestionBlocks(
                         this.app.getID(),

@@ -35,7 +35,7 @@ export class ExecuteBlockActionHandler {
 
         try {
             switch (actionId) {
-                case ElementEnum.QUESTION_TYPE_ACTION: {
+                case ElementEnum.ADD_QUESTION_ACTION: {
                     const questionPersistence = new QuestionPersistence(
                         this.persistence,
                         this.read.getPersistenceReader(),
@@ -44,88 +44,60 @@ export class ExecuteBlockActionHandler {
                         await questionPersistence.getQuestionBlocks(
                             this.app.getID(),
                         );
+                    let blocks: LayoutBlock[] = [
+                        {
+                            type: "input",
+                            label: {
+                                type: TextTypes.PLAIN_TEXT,
+                                text: "Add new question",
+                            },
+                            element: {
+                                type: "plain_text_input",
+                                placeholder: {
+                                    text: "Untitled Question",
+                                    type: TextTypes.PLAIN_TEXT,
+                                },
+                                blockId: ElementEnum.QUESTION_BLOCK,
+                                actionId: ElementEnum.QUESTION_ACTION,
+                                appId: this.app.getID(),
+                            },
+                        },
+                        {
+                            type: "actions",
+                            elements: [
+                                {
+                                    type: "static_select",
+                                    actionId: ElementEnum.QUESTION_TYPE_ACTION,
+                                    options: [
+                                        {
+                                            value: "short-answer",
+                                            text: {
+                                                type: "plain_text",
+                                                text: "Short Answer",
+                                                emoji: true,
+                                            },
+                                        },
+                                        {
+                                            value: "paragraph",
+                                            text: {
+                                                type: "plain_text",
+                                                text: "Paragraph",
+                                                emoji: true,
+                                            },
+                                        },
+                                    ],
+                                    placeholder: {
+                                        type: "plain_text",
+                                        text: "Select an item",
+                                    },
+                                    appId: this.app.getID(),
+                                    blockId: ElementEnum.QUESTION_TYPE_BLOCK,
+                                },
+                            ],
+                        },
+                    ];
 
-                    if (value === "Short Answer") {
-                        let block: LayoutBlock;
-                        block = {
-                            type: "input",
-                            label: {
-                                text: value + " Question",
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Enter question for short answers",
-                                },
-                                blockId: value + "Block",
-                                actionId: value + "Action",
-                                appId: this.app.getID(),
-                            },
-                        };
-                        questionBlocks.push(block);
-                    } else if (value === "Paragraph") {
-                        let block: LayoutBlock;
-                        block = {
-                            type: "input",
-                            label: {
-                                text: value + " Question",
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Enter question for paragraphs",
-                                },
-                                blockId: value + "Block",
-                                actionId: value + "Action",
-                                appId: this.app.getID(),
-                            },
-                        };
-                        questionBlocks.push(block);
-                    } else if (value === "Multiple Choice") {
-                        const questionBlock: LayoutBlock = {
-                            type: "input",
-                            label: {
-                                text: value + " Question",
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Enter question for multiple choice",
-                                },
-                                blockId: value+"question"+"Block",
-                                actionId: value+"question"+"Action",
-                                appId: this.app.getID(),
-                            },
-                        };
-                        const optionBlock: LayoutBlock = {
-                            type: "input",
-                            label: {
-                                text: '',
-                                type: TextTypes.PLAIN_TEXT,
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    type: TextTypes.PLAIN_TEXT,
-                                    text: "Option1,Option2,...",
-                                },
-                                blockId: value+"option"+"Block",
-                                actionId: value+"option"+"Action",
-                                appId: this.app.getID(),
-                            },
-                        };
-
-                        questionBlocks.push(questionBlock, optionBlock);
-
-                    } else {
-                        break;
-                    }
+                    questionBlocks.push(...blocks);
 
                     await questionPersistence.saveQuestionBlocks(
                         this.app.getID(),
@@ -147,6 +119,9 @@ export class ExecuteBlockActionHandler {
                             .getUiController()
                             .updateSurfaceView(modal, { triggerId }, user);
                     }
+                    break;
+                }
+                case ElementEnum.QUESTION_TYPE_ACTION: {
                     break;
                 }
                 default: {
