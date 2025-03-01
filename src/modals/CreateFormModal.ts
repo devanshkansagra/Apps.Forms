@@ -68,39 +68,6 @@ export async function CreateFormModal({
         },
     );
 
-    // blocks.push({
-    //     type: "section",
-    //     accessory: {
-    //         type: "overflow",
-    //         actionId: ElementEnum.QUESTION_TYPE_ACTION,
-    //         options: [
-    //             {
-    //                 value: "Short Answer",
-    //                 text: {
-    //                     type: TextTypes.PLAIN_TEXT,
-    //                     text: "Short Answer",
-    //                 },
-    //             },
-    //             {
-    //                 value: "Paragraph",
-    //                 text: {
-    //                     type: TextTypes.PLAIN_TEXT,
-    //                     text: "Paragraph",
-    //                 },
-    //             },
-    //             {
-    //                 value: "Multiple Choice",
-    //                 text: {
-    //                     type: TextTypes.PLAIN_TEXT,
-    //                     text: "Multiple Choice",
-    //                 },
-    //             },
-    //         ],
-    //         appId: id,
-    //         blockId: ElementEnum.QUESTION_TYPE_BLOCK,
-    //     },
-    // });
-
     const questionPersistence = new QuestionPersistence(
         persis,
         read.getPersistenceReader(),
@@ -110,22 +77,21 @@ export async function CreateFormModal({
         if (questionBlocks.length > 0) {
             blocks.push(...questionBlocks);
         }
-
     }
     blocks.push({
         type: "actions",
         elements: [
             {
-                type: 'button',
+                type: "button",
                 text: {
                     type: TextTypes.PLAIN_TEXT,
-                    text: 'Add Question',
+                    text: "Add Question",
                 },
                 blockId: ElementEnum.ADD_QUESTION_BLOCK,
                 actionId: ElementEnum.ADD_QUESTION_ACTION,
                 appId: id,
-            }
-        ]
+            },
+        ],
     });
 
     return {

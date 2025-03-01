@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import {
     IUIKitResponse,
     UIKitBlockInteractionContext,
@@ -44,6 +45,12 @@ export class ExecuteBlockActionHandler {
                         await questionPersistence.getQuestionBlocks(
                             this.app.getID(),
                         );
+
+                    const questionBlockId = uuidv4();
+                    const questionActionId = uuidv4();
+                    const questionTypeBlockId = uuidv4();
+                    const questionTypeActionId = uuidv4();
+
                     let blocks: LayoutBlock[] = [
                         {
                             type: "input",
@@ -57,8 +64,8 @@ export class ExecuteBlockActionHandler {
                                     text: "Untitled Question",
                                     type: TextTypes.PLAIN_TEXT,
                                 },
-                                blockId: ElementEnum.QUESTION_BLOCK,
-                                actionId: ElementEnum.QUESTION_ACTION,
+                                blockId: ElementEnum.QUESTION_ACTION + questionBlockId,
+                                actionId: ElementEnum.QUESTION_ACTION + questionActionId,
                                 appId: this.app.getID(),
                             },
                         },
@@ -67,7 +74,7 @@ export class ExecuteBlockActionHandler {
                             elements: [
                                 {
                                     type: "static_select",
-                                    actionId: ElementEnum.QUESTION_TYPE_ACTION,
+                                    actionId: ElementEnum.QUESTION_ACTION + questionTypeActionId,
                                     options: [
                                         {
                                             value: "short-answer",
@@ -91,7 +98,7 @@ export class ExecuteBlockActionHandler {
                                         text: "Select an item",
                                     },
                                     appId: this.app.getID(),
-                                    blockId: ElementEnum.QUESTION_TYPE_BLOCK,
+                                    blockId:ElementEnum.QUESTION_ACTION +questionTypeBlockId,
                                 },
                             ],
                         },
