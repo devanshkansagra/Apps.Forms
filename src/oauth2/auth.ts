@@ -11,6 +11,7 @@ import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { ElementEnum } from "../enums/ElementEnum";
 import { sendNotification } from "../helpers/message";
 import { TextTypes } from "../enums/TextTypes";
+import { getAuthorizationURL } from "../helpers/getAuthorizationURL";
 
 export async function authorize(
     app: SurveysApp,
@@ -21,7 +22,7 @@ export async function authorize(
     persistence: IPersistence,
 ) {
     try {
-        const url = await app.oAuth2ClientInstance.getUserAuthorizationUrl(user);
+        const url = await getAuthorizationURL(read);
         const blocks: LayoutBlock[] = [
             {
                 type: "section",

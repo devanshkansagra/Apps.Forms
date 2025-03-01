@@ -10,6 +10,7 @@ import { getCredentials } from "../helpers/getCredentials";
 import { OAuthURL } from "../enums/OAuthSettingEnum";
 import { AuthPersistence } from "../persistence/authPersistence";
 import { ElementEnum } from "../enums/ElementEnum";
+import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 
 export class SDK {
     constructor(
@@ -17,18 +18,14 @@ export class SDK {
         private readonly app: SurveysApp,
     ) {}
     public authPersistence = new AuthPersistence(this.app as SurveysApp);
-    public async createToken(
+    public async getAccessToken(
         read: IRead,
         code: string,
         http: IHttp,
-        user: IUser,
         persis: IPersistence,
-    ): Promise<void> {
-        const clientId =
-            "672627846978-qlihaphkd93gv1jogp827kl54iqkrati.apps.googleusercontent.com";
-        const clientSecret = "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";
-        const redirectURL =
-            "http://localhost:3000/api/apps/public/d6588a9f-0f27-4e6e-8975-e6cc380f0cab/google-cloud-callback";
+    ): Promise<IAuthData> {
+        const { clientId, clientSecret } = await getCredentials(read);
+        const redirectURL = OAuthURL.REDIRECT_URL;
 
         const response = await http.post(
             "https://oauth2.googleapis.com/token",
@@ -39,8 +36,13 @@ export class SDK {
                 content: `code=${code}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectURL}&grant_type=authorization_code`,
             },
         );
-
-        console.log(response);
+        let accessToken:IAuthData = {
+            expiresAt: response.data?.expires_in,
+            token: response.data?.access_token,
+            refreshToken: response.data?.refresh_token,
+            scope: response.data?.scope,
+        }
+        return accessToken
     }
 
     public async createGoogleForm(formData: any) {
@@ -49,7 +51,6 @@ export class SDK {
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
 
-        // Create the form with just the title
         const createFormResponse = await fetch(
             "https://forms.googleapis.com/v1/forms?key=AIzaSyA2EsTaRGEOGWlljx_RM5y18NxxoFOsluY",
             {
@@ -76,10 +77,8 @@ export class SDK {
         const createdForm = await createFormResponse.json();
         const formId = createdForm.formId;
 
-        // Prepare the requests to add description and questions
         const requests: any[] = [];
 
-        // Add form description
         const formDescription = formData[ElementEnum.FORM_DESCRIPTION_ACTION];
         requests.push({
             updateFormInfo: {
@@ -90,7 +89,6 @@ export class SDK {
             },
         });
 
-        // Iterate over the formData and pair questionText with questionType
         const questionTextKeys = Object.keys(formData).filter(
             (key) =>
                 key.startsWith(ElementEnum.QUESTION_ACTION) &&

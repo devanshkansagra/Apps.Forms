@@ -19,6 +19,7 @@ import {
     UIKitViewSubmitInteractionContext,
 } from "@rocket.chat/apps-engine/definition/uikit";
 import {
+    IAuthData,
     IOAuth2Client,
     IOAuth2ClientOptions,
 } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
@@ -35,37 +36,30 @@ import { OAuthURL } from "./src/enums/OAuthSettingEnum";
 import { SDK } from "./src/lib/SDK";
 import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/IOAuthApp";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
+import { IUser } from "@rocket.chat/apps-engine/definition/users";
 
 export class SurveysApp extends App {
-    public oAuth2ClientInstance: OAuth2Service;
     public sdk: SDK;
-    public oAuth2Config: IOAuth2ClientOptions;
 
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }
 
+    public async authorizationCallback(): Promise<any> {}
+
     public async initialize(
         configuration: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
-        this.oAuth2Config = {
-            alias: "google-cloud",
-            accessTokenUri: OAuthURL.ACCESSS_TOKEN_URI,
-            authUri: OAuthURL.AUTH_URI,
-            refreshTokenUri: OAuthURL.REFRESH_TOKEN_URI,
-            revokeTokenUri: OAuthURL.REVOKE_TOKEN_URI,
-            defaultScopes: [
-                "email",
-                "https://www.googleapis.com/auth/forms.body",
-                "https://www.googleapis.com/auth/forms.body.readonly",
-                "https://www.googleapis.com/auth/forms.responses.readonly",
-            ],
-        };
-        this.oAuth2ClientInstance = new OAuth2Service(this, this.oAuth2Config);
-        await this.oAuth2ClientInstance.setup(configuration);
+
         await configuration.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
+        );
+
+        await Promise.all(
+            settings.map((setting) => {
+                configuration.settings.provideSetting(setting);
+            })
         );
 
         await configuration.api.provideApi({
