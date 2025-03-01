@@ -112,6 +112,7 @@ export async function CreateFormModal({
             actionId: "",
             appId: id,
         },
+        clearOnClose: true,
         close: {
             type: "button",
             text: {

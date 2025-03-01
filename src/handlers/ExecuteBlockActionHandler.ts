@@ -74,7 +74,7 @@ export class ExecuteBlockActionHandler {
                             elements: [
                                 {
                                     type: "static_select",
-                                    actionId: ElementEnum.QUESTION_ACTION + questionTypeActionId,
+                                    actionId: ElementEnum.QUESTION_TYPE_ACTION + questionTypeActionId,
                                     options: [
                                         {
                                             value: "short-answer",
@@ -98,7 +98,7 @@ export class ExecuteBlockActionHandler {
                                         text: "Select an item",
                                     },
                                     appId: this.app.getID(),
-                                    blockId:ElementEnum.QUESTION_ACTION +questionTypeBlockId,
+                                    blockId: ElementEnum.QUESTION_TYPE_ACTION + questionTypeBlockId,
                                 },
                             ],
                         },
@@ -129,6 +129,7 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
                 case ElementEnum.QUESTION_TYPE_ACTION: {
+                    // Handle question type selection here if needed
                     break;
                 }
                 default: {

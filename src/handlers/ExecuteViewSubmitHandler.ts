@@ -11,6 +11,9 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { ElementEnum } from "../enums/ElementEnum";
 import { QuestionPersistence } from "../persistence/questionPersistence";
+import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
+import { sendNotification } from "../helpers/message";
+import { ModalEnum } from "../enums/ModalEnum";
 
 export class ExecuteViewSubmitHandler {
     private context: UIKitViewSubmitInteractionContext;
@@ -29,41 +32,46 @@ export class ExecuteViewSubmitHandler {
     public async execute(): Promise<IUIKitResponse> {
         const { view, user } = this.context.getInteractionData();
         const { state } = view;
+        const room = (await this.read.getRoomReader().getById('GENERAL')) as IRoom;
+        const questionPersistence = new QuestionPersistence(
+            this.persistence,
+            this.read.getPersistenceReader(),
+        );
+
+        const questionBlocks = await questionPersistence.getQuestionBlocks(
+            this.app.getID(),
+        );
 
         try {
-            const questionPersistence = new QuestionPersistence(
-                this.persistence,
-                this.read.getPersistenceReader(),
-            );
-
-            const questionBlocks = await questionPersistence.getQuestionBlocks(
-                this.app.getID(),
-            );
-
-            // Process the state to extract the form data
-            const formData = {};
-            for (const blockId in state) {
-                if (state.hasOwnProperty(blockId)) {
-                    const block = state[blockId];
-                    for (const actionId in block) {
-                        if (block.hasOwnProperty(actionId)) {
-                            formData[actionId] = block[actionId];
-                            console.log("BlockId: " + blockId);
-                            console.log("ActionId: " + actionId);
+            switch (view.id) {
+                case ModalEnum.CREATE_FORM_VIEW: {
+                    // Process the state to extract the form data
+                    const formData = {};
+                    for (const blockId in state) {
+                        if (state.hasOwnProperty(blockId)) {
+                            const block = state[blockId];
+                            for (const actionId in block) {
+                                if (block.hasOwnProperty(actionId)) {
+                                    formData[actionId] = block[actionId];
+                                }
+                            }
                         }
                     }
+
+                    console.log("FormData:", formData);
+
+                    const res = await this.createGoogleForm(formData);
+
+                    await sendNotification(this.read, this.modify, user, room, "New Google Form Created: " + res.responderUri);
+
+                    await questionPersistence.deleteQuestionBlocks(
+                        this.app.getID(),
+                    );
                 }
             }
-
-            // Create Google Form
-            await this.createGoogleForm(formData);
-
-            // Clear the question blocks after form submission
-            await questionPersistence.saveQuestionBlocks(this.app.getID(), []);
         } catch (error) {
-            console.warn("ExecuteViewSubmitHandler Error:", error);
+            console.log(error);
         }
-
         return {
             success: true,
         };
@@ -71,14 +79,13 @@ export class ExecuteViewSubmitHandler {
 
     private async createGoogleForm(formData: any) {
         const accessToken =
-            "ya29.a0AeXRPp5F9pys-fEgDeR3fM819RpNjJqPVd9qOR98HqI8HEcfVBg0s5TOYM8V8x6EXs43fOLiffBatq3u-AnIuoJRORzAeGhmT2rWv8IWkqI3pkfmWM1_P0gwczLnxqeDInXxvaGSQmE-EWJYDt6gvNxOSjxg7JuLnlxFl_3daCgYKAWkSARMSFQHGX2MinZRxv2Nvk9DjVL1CBT4VBA0175";
+            "ya29.a0AeXRPp7IB50DgEYBxKZ02lVvF6vSXbskA3K-M45_scyDKhtUUupLmNRkW6NKw1W3J9dAtiQNFUpbn1cmzVdPB40L75nBLFFkGvbk_YJwMp6V_AHQG9ix7lCgQ3H3nTzdL0NW4_rOmee1lFssvnsUSPe15TfAMdIOpDdY4P4HaCgYKAZQSARMSFQHGX2MiyaeqwT0l7MkKpX8aZNna9w0175";
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
-        const formDescription = formData[ElementEnum.FORM_DESCRIPTION_ACTION];
 
         // Create the form with just the title
         const createFormResponse = await fetch(
-            "https://forms.googleapis.com/v1/forms",
+            "https://forms.googleapis.com/v1/forms?key=AIzaSyA2EsTaRGEOGWlljx_RM5y18NxxoFOsluY",
             {
                 method: "POST",
                 headers: {
@@ -95,71 +102,101 @@ export class ExecuteViewSubmitHandler {
 
         if (!createFormResponse.ok) {
             console.log(createFormResponse);
+            const errorResponse = await createFormResponse.json();
+            console.log("Create Form Error:", errorResponse);
+            return;
         }
 
         const createdForm = await createFormResponse.json();
         const formId = createdForm.formId;
 
-        // Prepare the requests to add questions
+        // Prepare the requests to add description and questions
         const requests: any[] = [];
 
-        for (const actionId in formData) {
-            if (actionId.startsWith(ElementEnum.QUESTION_ACTION)) {
-                const questionText = formData[actionId];
-                const questionType = formData[actionId.replace(ElementEnum.QUESTION_ACTION, ElementEnum.QUESTION_TYPE_ACTION)];
-                console.log(questionText);
+        // Add form description
+        const formDescription = formData[ElementEnum.FORM_DESCRIPTION_ACTION];
+        requests.push({
+            updateFormInfo: {
+                info: {
+                    description: formDescription,
+                },
+                updateMask: "description",
+            },
+        });
 
-                let questionItem: any;
-                if (questionType === "short-answer") {
-                    questionItem = {
-                        createItem: {
-                            item: {
-                                title: questionText,
-                                questionItem: {
-                                    question: {
-                                        textQuestion: {
-                                            paragraph: false,
-                                        },
-                                    },
-                                },
-                            },
-                            location: {
-                                index: -1,
-                            },
-                        },
-                    };
-                } else if (questionType === "paragraph") {
-                    questionItem = {
-                        createItem: {
-                            item: {
-                                title: questionText,
-                                questionItem: {
-                                    question: {
-                                        textQuestion: {
-                                            paragraph: true,
-                                        },
-                                    },
-                                },
-                            },
-                            location: {
-                                index: -1,
-                            },
-                        },
-                    };
-                }
+        // Iterate over the formData and pair questionText with questionType
+        const questionTextKeys = Object.keys(formData).filter(
+            (key) =>
+                key.startsWith(ElementEnum.QUESTION_ACTION) &&
+                !key.includes(ElementEnum.QUESTION_TYPE_ACTION),
+        );
+        const questionTypeKeys = Object.keys(formData).filter((key) =>
+            key.startsWith(ElementEnum.QUESTION_TYPE_ACTION),
+        );
 
-                if (questionItem) {
-                    requests.push(questionItem);
-                }
-            }
+        console.log("Question Text Keys:", questionTextKeys);
+        console.log("Question Type Keys:", questionTypeKeys);
+
+        if (questionTextKeys.length !== questionTypeKeys.length) {
+            console.error("Mismatch between question texts and question types");
+            console.log("Question Text Keys:", questionTextKeys);
+            console.log("Question Type Keys:", questionTypeKeys);
+            return;
         }
+        questionTextKeys.forEach((questionTextKey, index) => {
+            const questionText = formData[questionTextKey];
+            const questionType = formData[questionTypeKeys[index]];
+
+            let questionItem: any;
+            if (questionType === "short-answer") {
+                questionItem = {
+                    createItem: {
+                        item: {
+                            title: questionText,
+                            questionItem: {
+                                question: {
+                                    textQuestion: {
+                                        paragraph: false,
+                                    },
+                                },
+                            },
+                        },
+                        location: {
+                            index: index,
+                        },
+                    },
+                };
+            } else if (questionType === "paragraph") {
+                questionItem = {
+                    createItem: {
+                        item: {
+                            title: questionText,
+                            questionItem: {
+                                question: {
+                                    textQuestion: {
+                                        paragraph: true,
+                                    },
+                                },
+                            },
+                        },
+                        location: {
+                            index: index,
+                        },
+                    },
+                };
+            }
+
+            if (questionItem) {
+                requests.push(questionItem);
+            }
+        });
 
         // Debugging: Log the requests array
-        console.log('Requests:', requests);
-
-        // Use batchUpdate to add questions to the form
+        console.log("Requests:", JSON.stringify(requests));
+        console.log("FormId: " + formId);
+        // Use batchUpdate to add description and questions to the form
         const batchUpdateResponse = await fetch(
-            `https://forms.googleapis.com/v1/forms/${formId}:batchUpdate`,
+            `https://forms.googleapis.com/v1/forms/${formId}:batchUpdate?key=AIzaSyA2EsTaRGEOGWlljx_RM5y18NxxoFOsluY`,
             {
                 method: "POST",
                 headers: {
@@ -173,10 +210,11 @@ export class ExecuteViewSubmitHandler {
         );
 
         if (!batchUpdateResponse.ok) {
-            console.log(batchUpdateResponse);
+            const errorResponse = await batchUpdateResponse.json();
+            console.log("BatchUpdate Error:", errorResponse);
+            return;
         }
 
-        const updatedForm = await batchUpdateResponse.json();
-        console.log("Form updated:", updatedForm);
+        return createdForm;
     }
 }

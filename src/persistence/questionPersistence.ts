@@ -43,7 +43,7 @@ export class QuestionPersistence {
         }
     }
 
-    public async deleteQuestionBlocks(appId: string): Promise<any> {
+    public async deleteQuestionBlocks(appId: string): Promise<void> {
         try {
             const associations: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
@@ -51,7 +51,7 @@ export class QuestionPersistence {
                     `${QUESTION_BLOCKS_KEY}_${appId}`
                 ),
             ];
-            return await this.persistence.removeByAssociations(associations);
+            await this.persistence.removeByAssociations(associations);
         } catch (error) {
             console.warn("Delete Question Blocks Error:", error);
         }

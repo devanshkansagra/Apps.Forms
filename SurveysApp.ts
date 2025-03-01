@@ -34,6 +34,7 @@ import { OAuth2Service } from "./src/oauth2/OAuth2Service";
 import { OAuthURL } from "./src/enums/OAuthSettingEnum";
 import { SDK } from "./src/lib/SDK";
 import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/IOAuthApp";
+import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 
 export class SurveysApp extends App {
     public oAuth2ClientInstance: OAuth2Service;
