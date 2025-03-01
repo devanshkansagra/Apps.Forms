@@ -26,3 +26,27 @@ export async function sendNotification(
 
     return read.getNotifier().notifyUser(sender, msg.getMessage());
 }
+
+export async function sendMessage(
+    read: IRead,
+    modify: IModify,
+    sender: IUser,
+    room: IRoom,
+    message: any,
+    blocks?: LayoutBlock[],
+): Promise<void> {
+    const appUser = (await read.getUserReader().getAppUser()) as IUser;
+
+    const msg = modify
+        .getCreator()
+        .startMessage()
+        .setSender(appUser)
+        .setRoom(room)
+        .setText(message);
+
+    if (blocks) {
+        msg.setBlocks(blocks);
+    }
+
+    await modify.getCreator().finish(msg);
+}

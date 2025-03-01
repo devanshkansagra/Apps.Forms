@@ -45,8 +45,6 @@ export class SurveysApp extends App {
         super(info, logger, accessors);
     }
 
-    public async authorizationCallback(): Promise<any> {}
-
     public async initialize(
         configuration: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
@@ -67,6 +65,8 @@ export class SurveysApp extends App {
             security: ApiSecurity.UNSECURE,
             endpoints: [new WebhookEndpoint(this)],
         });
+
+        this.sdk = new SDK(this.getAccessors().http, this)
     }
 
     public async executeViewSubmitHandler(

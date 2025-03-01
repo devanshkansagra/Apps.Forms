@@ -31,7 +31,8 @@ export class WebhookEndpoint extends ApiEndpoint {
         persis: IPersistence,
     ): Promise<IApiResponse> {
         const { code } = request.query;
-        const sdk = new SDK(http, this.app);
+        console.log(request);
+        const sdk = this.app.sdk;
         let token: IAuthData = await sdk.getAccessToken(
             read,
             code,

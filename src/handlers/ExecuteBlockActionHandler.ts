@@ -132,6 +132,10 @@ export class ExecuteBlockActionHandler {
                     // Handle question type selection here if needed
                     break;
                 }
+
+                case ElementEnum.LOGIN_BUTTON_ACTION: {
+
+                }
                 default: {
                     console.log("Default executed");
                 }

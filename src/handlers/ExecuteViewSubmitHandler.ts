@@ -12,7 +12,7 @@ import {
 import { ElementEnum } from "../enums/ElementEnum";
 import { QuestionPersistence } from "../persistence/questionPersistence";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
-import { sendNotification } from "../helpers/message";
+import { sendMessage, sendNotification } from "../helpers/message";
 import { ModalEnum } from "../enums/ModalEnum";
 import { SDK } from "../lib/SDK";
 
@@ -41,10 +41,6 @@ export class ExecuteViewSubmitHandler {
 
         const sdk = new SDK(this.http, this.app);
 
-        const questionBlocks = await questionPersistence.getQuestionBlocks(
-            this.app.getID(),
-        );
-
         try {
             switch (view.id) {
                 case ModalEnum.CREATE_FORM_VIEW: {
@@ -60,9 +56,9 @@ export class ExecuteViewSubmitHandler {
                         }
                     }
 
-                    const res = await sdk.createGoogleForm(formData);
+                    const res = await sdk.createGoogleForm(formData, user, this.read);
 
-                    await sendNotification(this.read, this.modify, user, room, "New Google Form Created: [Open to fill form]" +"(" + res.responderUri + ")");
+                    await sendMessage(this.read, this.modify, user, room, "New Google Form Created by " +user.name+ " : [Open to fill form]" +"(" + res.responderUri + ")");
 
                     await questionPersistence.deleteQuestionBlocks(
                         this.app.getID(),

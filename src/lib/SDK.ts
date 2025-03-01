@@ -42,12 +42,16 @@ export class SDK {
             refreshToken: response.data?.refresh_token,
             scope: response.data?.scope,
         }
+
+        // await this.authPersistence.setAccessTokenForUser(accessToken, user, persis)
         return accessToken
     }
 
-    public async createGoogleForm(formData: any) {
+    public async createGoogleForm(formData: any, user: IUser, read: IRead) {
+        const token = await this.authPersistence.getAccessTokenForUser(user, read);
+        console.log(token);
         const accessToken =
-            "ya29.a0AeXRPp4sWaGO4bwkRhxdW0waE0Y7cI4R5YzLkk8QcH0y3Jnku5czKYdkfVZcUBSqfQ7CD3nvuzJGaWDSIpHSwq_aHH7UidHLzb9xZOwyoGq9pCLgZKJC08S6EwbOxieNukuSh5dMAVCypTJjWNTp4rM8hfTglqDc6HhmGCHDaCgYKAUsSARMSFQHGX2MiX4PGJvbbl0fC64UphsNgsg0175";
+            "ya29.a0AeXRPp5tz-CunIt_PKGSZFD1x9K144m_UoSnZ6BA2I9-2N7y5aZCvyRbsK4zv6M4D5bXaICIOEbrQ3q5G2teQYeGeD3rujJoXXB_ANcXAX74R5jKRvmOXybWEYqQnWA9-aoUBueOGLuaoy3UQuwOnrSn1j8Ca2oWCMADltplaCgYKASESARMSFQHGX2Mi-knlJ-htuY84ubJooug-VQ0175";
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
 

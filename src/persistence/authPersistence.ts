@@ -8,6 +8,7 @@ import {
     RocketChatAssociationModel,
     RocketChatAssociationRecord,
 } from "@rocket.chat/apps-engine/definition/metadata";
+import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 
 export class AuthPersistence {
     constructor(private readonly app: SurveysApp) {}
