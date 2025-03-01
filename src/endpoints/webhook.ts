@@ -15,6 +15,7 @@ import { OAuthURL } from "../enums/OAuthSettingEnum";
 import { SDK } from "../lib/SDK";
 import { SurveysApp } from "../../SurveysApp";
 import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
+import { IUser } from "@rocket.chat/apps-engine/definition/users";
 
 export class WebhookEndpoint extends ApiEndpoint {
     public path = "google-cloud-callback";
@@ -30,12 +31,13 @@ export class WebhookEndpoint extends ApiEndpoint {
         http: IHttp,
         persis: IPersistence,
     ): Promise<IApiResponse> {
-        const { code } = request.query;
-        console.log(request);
+        const { code, state } = request.query;
+        const user: IUser = await read.getUserReader().getById(state);
         const sdk = this.app.sdk;
         let token: IAuthData = await sdk.getAccessToken(
             read,
             code,
+            user,
             http,
             persis,
         );

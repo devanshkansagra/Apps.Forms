@@ -21,6 +21,7 @@ export class SDK {
     public async getAccessToken(
         read: IRead,
         code: string,
+        user: IUser,
         http: IHttp,
         persis: IPersistence,
     ): Promise<IAuthData> {
@@ -43,15 +44,14 @@ export class SDK {
             scope: response.data?.scope,
         }
 
-        // await this.authPersistence.setAccessTokenForUser(accessToken, user, persis)
+        await this.authPersistence.setAccessTokenForUser(accessToken, user, persis)
         return accessToken
     }
 
     public async createGoogleForm(formData: any, user: IUser, read: IRead) {
         const token = await this.authPersistence.getAccessTokenForUser(user, read);
-        console.log(token);
-        const accessToken =
-            "ya29.a0AeXRPp5tz-CunIt_PKGSZFD1x9K144m_UoSnZ6BA2I9-2N7y5aZCvyRbsK4zv6M4D5bXaICIOEbrQ3q5G2teQYeGeD3rujJoXXB_ANcXAX74R5jKRvmOXybWEYqQnWA9-aoUBueOGLuaoy3UQuwOnrSn1j8Ca2oWCMADltplaCgYKASESARMSFQHGX2Mi-knlJ-htuY84ubJooug-VQ0175";
+        const accessToken = token.token;
+        console.log("Access Token: "+accessToken.token);
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
 
@@ -60,7 +60,7 @@ export class SDK {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${accessToken.token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -158,7 +158,7 @@ export class SDK {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${accessToken.token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({

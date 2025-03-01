@@ -14,7 +14,7 @@ export class AuthPersistence {
     constructor(private readonly app: SurveysApp) {}
 
     public async setAccessTokenForUser(
-        token: string,
+        token: IAuthData,
         user: IUser,
         persis: IPersistence,
     ) {
