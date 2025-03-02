@@ -58,7 +58,12 @@ export class ExecuteViewSubmitHandler {
 
                     const res = await sdk.createGoogleForm(formData, user, this.read);
 
-                    await sendMessage(this.read, this.modify, user, room, "New Google Form Created by " +user.name+ " : [Open to fill form]" +"(" + res.responderUri + ")");
+                    if(!res) {
+                        await sendNotification(this.read, this.modify, user, room, "Unable to create Google Form please login to create");
+                        return {success: false};
+                    }
+
+                    await sendMessage(this.read, this.modify, user, room, "New Google Form Created by " +user.name+ " : [Open to fill form]" +"(" + res?.data.responderUri + ")");
 
                     await questionPersistence.deleteQuestionBlocks(
                         this.app.getID(),

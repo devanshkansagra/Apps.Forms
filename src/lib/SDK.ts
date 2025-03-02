@@ -1,5 +1,6 @@
 import {
     IHttp,
+    IHttpResponse,
     IModify,
     IPersistence,
     IRead,
@@ -54,15 +55,14 @@ export class SDK {
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
 
-        const createFormResponse = await fetch(
+        const createFormResponse = await this.http.post(
             "https://forms.googleapis.com/v1/forms",
             {
-                method: "POST",
                 headers: {
                     Authorization: `Bearer ${accessToken.token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
+                content: JSON.stringify({
                     info: {
                         title: formTitle,
                     },
@@ -70,15 +70,13 @@ export class SDK {
             },
         );
 
-        if (!createFormResponse.ok) {
-            console.log(createFormResponse);
-            const errorResponse = await createFormResponse.json();
-            console.log("Create Form Error:", errorResponse);
+        if(!createFormResponse.statusCode.toString().startsWith('2')) {
+            console.log("Create Form error: " + createFormResponse);
             return;
         }
 
-        const createdForm = await createFormResponse.json();
-        const formId = createdForm.formId;
+        const createdForm = createFormResponse
+        const formId = createdForm.data?.formId;
 
         const requests: any[] = [];
 
@@ -152,23 +150,20 @@ export class SDK {
             }
         });
 
-        const batchUpdateResponse = await fetch(
+        const batchUpdateResponse: IHttpResponse = await this.http.post(
             `https://forms.googleapis.com/v1/forms/${formId}:batchUpdate`,
             {
-                method: "POST",
                 headers: {
                     Authorization: `Bearer ${accessToken.token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
+                content: JSON.stringify({
                     requests: requests,
                 }),
             },
         );
-
-        if (!batchUpdateResponse.ok) {
-            const errorResponse = await batchUpdateResponse.json();
-            console.log("BatchUpdate Error:", errorResponse);
+        if (!batchUpdateResponse.statusCode.toString().startsWith('2')) {
+            console.log("BatchUpdate Error:", batchUpdateResponse);
             return;
         }
 
