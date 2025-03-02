@@ -16,7 +16,7 @@ export async function getCredentials(
     const APIKey = (await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById('api-key'))
+        .getValueById('gemini-api-key'))
 
 
     return { clientId, APIKey, clientSecret };

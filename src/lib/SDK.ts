@@ -51,12 +51,11 @@ export class SDK {
     public async createGoogleForm(formData: any, user: IUser, read: IRead) {
         const token = await this.authPersistence.getAccessTokenForUser(user, read);
         const accessToken = token.token;
-        console.log("Access Token: "+accessToken.token);
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
 
         const createFormResponse = await fetch(
-            "https://forms.googleapis.com/v1/forms?key=AIzaSyA2EsTaRGEOGWlljx_RM5y18NxxoFOsluY",
+            "https://forms.googleapis.com/v1/forms",
             {
                 method: "POST",
                 headers: {
@@ -154,7 +153,7 @@ export class SDK {
         });
 
         const batchUpdateResponse = await fetch(
-            `https://forms.googleapis.com/v1/forms/${formId}:batchUpdate?key=AIzaSyA2EsTaRGEOGWlljx_RM5y18NxxoFOsluY`,
+            `https://forms.googleapis.com/v1/forms/${formId}:batchUpdate`,
             {
                 method: "POST",
                 headers: {
