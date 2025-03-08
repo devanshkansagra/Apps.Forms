@@ -11,6 +11,7 @@ import { QuestionPersistence } from "../persistence/questionPersistence";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { FormsPersistence } from "../persistence/formsPersistence";
 import { format } from "util";
+import { FormsListModal } from "../modals/FormsListModal";
 
 export async function createForm(
     app: SurveysApp,
@@ -23,7 +24,6 @@ export async function createForm(
     threadId: string | undefined,
 ) {
     if (triggerId) {
-
         // Create the form modal
         const modal = await CreateFormModal({
             read,
@@ -49,10 +49,25 @@ export async function getForms(
     user: IUser,
     room: IRoom,
     persis: IPersistence,
+    triggerId: string,
+    threadId: string | undefined,
 ) {
-    const formPersistence = new FormsPersistence(persis, read.getPersistenceReader());
+    const formPersistence = new FormsPersistence(
+        persis,
+        read.getPersistenceReader(),
+    );
     const data = await formPersistence.getFormData(room, user);
-    console.log(data);
+    const modal = await FormsListModal({
+        read,
+        modify,
+        persis,
+        triggerId,
+        threadId,
+        data,
+        id: app.getID(),
+    });
+
+    await modify.getUiController().openSurfaceView(modal, { triggerId }, user);
 }
 
 export async function deleteForms(
@@ -63,6 +78,9 @@ export async function deleteForms(
     room: IRoom,
     persis: IPersistence,
 ) {
-    const formPersistence = new FormsPersistence(persis, read.getPersistenceReader());
+    const formPersistence = new FormsPersistence(
+        persis,
+        read.getPersistenceReader(),
+    );
     await formPersistence.clearFormData(room, user);
 }

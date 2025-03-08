@@ -69,7 +69,7 @@ export class CommandUtility implements ICommandUtility {
                     break;
                 }
 
-                case CommandEnum.FORMS: {
+                case CommandEnum.LIST: {
                     await getForms(
                         this.app,
                         this.read,
@@ -77,6 +77,8 @@ export class CommandUtility implements ICommandUtility {
                         this.sender,
                         this.room,
                         this.persis,
+                        this.triggerId as string,
+                        this.threadId,
                     );
                     break;
                 }

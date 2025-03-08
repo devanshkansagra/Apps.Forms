@@ -23,10 +23,6 @@ export class FormsPersistence {
                     `formData`,
                 ),
                 new RocketChatAssociationRecord(
-                    RocketChatAssociationModel.ROOM,
-                    room.id,
-                ),
-                new RocketChatAssociationRecord(
                     RocketChatAssociationModel.USER,
                     `${user.id}`,
                 ),
@@ -50,20 +46,15 @@ export class FormsPersistence {
                     `formData`,
                 ),
                 new RocketChatAssociationRecord(
-                    RocketChatAssociationModel.ROOM,
-                    room.id,
-                ),
-                new RocketChatAssociationRecord(
                     RocketChatAssociationModel.USER,
                     `${user.id}`,
                 ),
             ];
 
-            const data = (await this.persistenceRead.readByAssociations(associations)) as Array<object>;
-            if (!data || data.length === 0) {
-                return "No form data found"
-            }
-            return data[0]
+            let data = (await this.persistenceRead.readByAssociations(
+                associations,
+            )) as Array<object>;
+            return data.length > 0 ? data[0] : [];
         } catch (error) {
             console.log(error);
         }
@@ -75,10 +66,6 @@ export class FormsPersistence {
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
                     `formData`,
-                ),
-                new RocketChatAssociationRecord(
-                    RocketChatAssociationModel.ROOM,
-                    room.id,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.USER,

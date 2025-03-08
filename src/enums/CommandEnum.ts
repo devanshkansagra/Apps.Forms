@@ -1,6 +1,6 @@
 export enum CommandEnum {
     CREATE = "create",
     LOGIN = "login",
-    FORMS = "forms",
+    LIST = "list",
     CLEAR = 'clear',
 }

@@ -70,7 +70,7 @@ export class ExecuteViewSubmitHandler {
                         this.read,
                     );
 
-                    const data = await formPersistence.getFormData(room, user);
+                    const data = await formPersistence.getFormData(room, user) as Array<object>;
                     data.push(res?.data);
                     await formPersistence.storeFormData(room, data, user);
 
