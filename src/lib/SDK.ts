@@ -71,7 +71,7 @@ export class SDK {
         );
 
         if(!createFormResponse.statusCode.toString().startsWith('2')) {
-            console.log("Create Form error: " + createFormResponse);
+            console.log("Create Form error: " + JSON.stringify(createFormResponse));
             return;
         }
 
@@ -166,7 +166,6 @@ export class SDK {
             console.log("BatchUpdate Error:", batchUpdateResponse);
             return;
         }
-
         return createdForm;
     }
 }
