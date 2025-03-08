@@ -15,6 +15,7 @@ import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { sendMessage, sendNotification } from "../helpers/message";
 import { ModalEnum } from "../enums/ModalEnum";
 import { SDK } from "../lib/SDK";
+import { FormsPersistence } from "../persistence/formsPersistence";
 
 export class ExecuteViewSubmitHandler {
     private context: UIKitViewSubmitInteractionContext;
@@ -33,8 +34,15 @@ export class ExecuteViewSubmitHandler {
     public async execute(): Promise<IUIKitResponse> {
         const { view, user } = this.context.getInteractionData();
         const { state } = view;
-        const room = (await this.read.getRoomReader().getById('GENERAL')) as IRoom;
+        const room = (await this.read
+            .getRoomReader()
+            .getById("GENERAL")) as IRoom;
         const questionPersistence = new QuestionPersistence(
+            this.persistence,
+            this.read.getPersistenceReader(),
+        );
+
+        const formPersistence = new FormsPersistence(
             this.persistence,
             this.read.getPersistenceReader(),
         );
@@ -56,14 +64,39 @@ export class ExecuteViewSubmitHandler {
                         }
                     }
 
-                    const res = await sdk.createGoogleForm(formData, user, this.read);
+                    const res = await sdk.createGoogleForm(
+                        formData,
+                        user,
+                        this.read,
+                    );
 
-                    if(!res) {
-                        await sendNotification(this.read, this.modify, user, room, "Unable to create Google Form please login to create");
-                        return {success: false};
+                    const data = await formPersistence.getFormData(room, user);
+                    data.push(res?.data);
+                    await formPersistence.storeFormData(room, data, user);
+
+                    if (!res) {
+                        await sendNotification(
+                            this.read,
+                            this.modify,
+                            user,
+                            room,
+                            "Unable to create Google Form please login to create",
+                        );
+                        return { success: false };
                     }
 
-                    await sendMessage(this.read, this.modify, user, room, "New Google Form Created by " +user.name+ " : [Open to fill form]" +"(" + res?.data.responderUri + ")");
+                    await sendNotification(
+                        this.read,
+                        this.modify,
+                        user,
+                        room,
+                        "New Google Form Created by " +
+                            user.name +
+                            " : [Open to fill form]" +
+                            "(" +
+                            res?.data.responderUri +
+                            ")",
+                    );
 
                     await questionPersistence.deleteQuestionBlocks(
                         this.app.getID(),

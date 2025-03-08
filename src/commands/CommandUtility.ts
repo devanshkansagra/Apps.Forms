@@ -13,7 +13,7 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { sendNotification } from "../helpers/message";
 import { CommandEnum } from "../enums/CommandEnum";
-import { createForm } from "../handlers/CreateFormHandler";
+import { createForm, deleteForms, getForms } from "../handlers/FormHandler";
 import { handleLogin } from "../handlers/AuthorizationHandler";
 
 export class CommandUtility implements ICommandUtility {
@@ -34,6 +34,7 @@ export class CommandUtility implements ICommandUtility {
         this.sender = props.sender;
         this.room = props.room;
         this.read = props.read;
+        this.persis = props.persis
         this.modify = props.modify;
         this.http = props.http;
         this.triggerId = props.triggerId;
@@ -58,6 +59,29 @@ export class CommandUtility implements ICommandUtility {
                 }
                 case CommandEnum.LOGIN: {
                     await handleLogin(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.persis,
+                    );
+                    break;
+                }
+
+                case CommandEnum.FORMS: {
+                    await getForms(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.persis,
+                    );
+                    break;
+                }
+                case CommandEnum.CLEAR: {
+                    await deleteForms(
                         this.app,
                         this.read,
                         this.modify,
