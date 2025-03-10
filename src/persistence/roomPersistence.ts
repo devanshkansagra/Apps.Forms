@@ -21,13 +21,11 @@ export class RoomPersistence {
                 `${user.id}#RoomId`,
             );
 
-            await this.persis.updateByAssociation(association, {user}, true);
+            await this.persis.updateByAssociation(association, { user }, true);
         } catch (error) {
             console.log(error);
         }
     }
 
-    public async getRoomUserData() {
-
-    }
+    public async getRoomUserData() {}
 }

@@ -38,6 +38,7 @@ export class WebhookEndpoint extends ApiEndpoint {
             read,
             code,
             user,
+            modify,
             http,
             persis,
         );

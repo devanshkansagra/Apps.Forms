@@ -6,7 +6,7 @@ import { OAuthSetting } from "../enums/OAuthSettingEnum";
 
 export const settings: ISetting[] = [
     {
-        id: 'client-id',
+        id: "client-id",
         type: SettingType.STRING,
         packageValue: "",
         required: true,
@@ -18,7 +18,7 @@ export const settings: ISetting[] = [
         multiline: false,
     },
     {
-        id: 'client-secret',
+        id: "client-secret",
         type: SettingType.PASSWORD,
         packageValue: "",
         required: true,
@@ -30,7 +30,7 @@ export const settings: ISetting[] = [
         multiline: false,
     },
     {
-        id: 'gemini-api-key',
+        id: "gemini-api-key",
         type: SettingType.STRING,
         packageValue: "",
         required: true,

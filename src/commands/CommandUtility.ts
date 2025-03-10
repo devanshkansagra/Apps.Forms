@@ -34,7 +34,7 @@ export class CommandUtility implements ICommandUtility {
         this.sender = props.sender;
         this.room = props.room;
         this.read = props.read;
-        this.persis = props.persis
+        this.persis = props.persis;
         this.modify = props.modify;
         this.http = props.http;
         this.triggerId = props.triggerId;

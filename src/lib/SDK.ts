@@ -12,6 +12,8 @@ import { OAuthURL } from "../enums/OAuthSettingEnum";
 import { AuthPersistence } from "../persistence/authPersistence";
 import { ElementEnum } from "../enums/ElementEnum";
 import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
+import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
+import { sendNotification } from "../helpers/message";
 
 export class SDK {
     constructor(
@@ -23,11 +25,14 @@ export class SDK {
         read: IRead,
         code: string,
         user: IUser,
+        modify: IModify,
         http: IHttp,
         persis: IPersistence,
     ): Promise<IAuthData> {
         const { clientId, clientSecret } = await getCredentials(read);
         const redirectURL = OAuthURL.REDIRECT_URL;
+
+        const room = (await read.getRoomReader().getById("GENERAL")) as IRoom;
 
         const response = await http.post(
             "https://oauth2.googleapis.com/token",
@@ -38,19 +43,38 @@ export class SDK {
                 content: `code=${code}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectURL}&grant_type=authorization_code`,
             },
         );
-        let accessToken:IAuthData = {
-            expiresAt: response.data?.expires_in,
-            token: response.data?.access_token,
-            refreshToken: response.data?.refresh_token,
-            scope: response.data?.scope,
-        }
 
-        await this.authPersistence.setAccessTokenForUser(accessToken, user, persis)
-        return accessToken
+        let accessToken: any = {};
+        if (response) {
+            accessToken = {
+                expiresAt: response.data?.expires_in,
+                token: response.data?.access_token,
+                refreshToken: response.data?.refresh_token,
+                scope: response.data?.scope,
+            };
+
+            await sendNotification(
+                read,
+                modify,
+                user,
+                room,
+                "Login successful 🚀",
+            );
+
+            await this.authPersistence.setAccessTokenForUser(
+                accessToken,
+                user,
+                persis,
+            );
+        }
+        return accessToken;
     }
 
     public async createGoogleForm(formData: any, user: IUser, read: IRead) {
-        const token = await this.authPersistence.getAccessTokenForUser(user, read);
+        const token = await this.authPersistence.getAccessTokenForUser(
+            user,
+            read,
+        );
         const accessToken = token.token;
 
         const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
@@ -70,12 +94,14 @@ export class SDK {
             },
         );
 
-        if(!createFormResponse.statusCode.toString().startsWith('2')) {
-            console.log("Create Form error: " + JSON.stringify(createFormResponse));
+        if (!createFormResponse.statusCode.toString().startsWith("2")) {
+            console.log(
+                "Create Form error: " + JSON.stringify(createFormResponse),
+            );
             return;
         }
 
-        const createdForm = createFormResponse
+        const createdForm = createFormResponse;
         const formId = createdForm.data?.formId;
 
         const requests: any[] = [];
@@ -162,7 +188,7 @@ export class SDK {
                 }),
             },
         );
-        if (!batchUpdateResponse.statusCode.toString().startsWith('2')) {
+        if (!batchUpdateResponse.statusCode.toString().startsWith("2")) {
             console.log("BatchUpdate Error:", batchUpdateResponse);
             return;
         }

@@ -51,21 +51,21 @@ export async function FormsListModal({
             type: "section",
             text: {
                 type: "mrkdwn",
-                text: "### " + form.info.title
+                text: "### " + form.info.title,
             },
             accessory: {
-                type: 'button',
+                type: "button",
                 blockId: "",
                 actionId: "",
                 appId: id,
                 text: {
                     type: "plain_text",
-                    text: 'See responses on google',
+                    text: "See responses on google",
                 },
-                url: `https://docs.google.com/forms/d/${form.formId}/edit#responses`
-            }
+                url: `https://docs.google.com/forms/d/${form.formId}/edit#responses`,
+            },
         });
-        blocks.push({ type: 'divider' });
+        blocks.push({ type: "divider" });
     });
     return {
         id: ModalEnum.FORM_LIST_VIEW,

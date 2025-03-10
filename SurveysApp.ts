@@ -1,5 +1,6 @@
 import {
     IAppAccessors,
+    IAppInstallationContext,
     IConfigurationExtend,
     IEnvironmentRead,
     IHttp,
@@ -37,6 +38,7 @@ import { SDK } from "./src/lib/SDK";
 import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/IOAuthApp";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
+import { sendMessage, sendNotification } from "./src/helpers/message";
 
 export class SurveysApp extends App {
     public sdk: SDK;
@@ -49,7 +51,6 @@ export class SurveysApp extends App {
         configuration: IConfigurationExtend,
         environmentRead: IEnvironmentRead,
     ): Promise<void> {
-
         await configuration.slashCommands.provideSlashCommand(
             new SurveyCommand(this),
         );
@@ -57,7 +58,7 @@ export class SurveysApp extends App {
         await Promise.all(
             settings.map((setting) => {
                 configuration.settings.provideSetting(setting);
-            })
+            }),
         );
 
         await configuration.api.provideApi({
@@ -66,7 +67,27 @@ export class SurveysApp extends App {
             endpoints: [new WebhookEndpoint(this)],
         });
 
-        this.sdk = new SDK(this.getAccessors().http, this)
+        this.sdk = new SDK(this.getAccessors().http, this);
+    }
+
+    public async onInstall(
+        context: IAppInstallationContext,
+        read: IRead,
+        http: IHttp,
+        persistence: IPersistence,
+        modify: IModify,
+    ): Promise<void> {
+        const room = (await read.getRoomReader().getById("GENERAL")) as IRoom;
+        const { user } = context;
+        await sendNotification(
+            read,
+            modify,
+            user,
+            room,
+            "Hello " +
+                user.name +
+                "! Thank you for installing Smart Google Forms RocketChat app",
+        );
     }
 
     public async executeViewSubmitHandler(

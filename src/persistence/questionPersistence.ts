@@ -1,13 +1,19 @@
-import { IPersistence, IPersistenceRead } from "@rocket.chat/apps-engine/definition/accessors";
-import { RocketChatAssociationModel, RocketChatAssociationRecord } from "@rocket.chat/apps-engine/definition/metadata";
+import {
+    IPersistence,
+    IPersistenceRead,
+} from "@rocket.chat/apps-engine/definition/accessors";
+import {
+    RocketChatAssociationModel,
+    RocketChatAssociationRecord,
+} from "@rocket.chat/apps-engine/definition/metadata";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 
-const QUESTION_BLOCKS_KEY = 'question_blocks';
+const QUESTION_BLOCKS_KEY = "question_blocks";
 
 export class QuestionPersistence {
     constructor(
         private readonly persistence: IPersistence,
-        private readonly persistenceRead: IPersistenceRead
+        private readonly persistenceRead: IPersistenceRead,
     ) {}
 
     public async getQuestionBlocks(appId: string): Promise<LayoutBlock[]> {
@@ -15,10 +21,11 @@ export class QuestionPersistence {
             const associations: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `${QUESTION_BLOCKS_KEY}_${appId}`
+                    `${QUESTION_BLOCKS_KEY}_${appId}`,
                 ),
             ];
-            const data = await this.persistenceRead.readByAssociations(associations);
+            const data =
+                await this.persistenceRead.readByAssociations(associations);
             if (data.length > 0) {
                 return data[0] as LayoutBlock[];
             }
@@ -29,15 +36,22 @@ export class QuestionPersistence {
         }
     }
 
-    public async saveQuestionBlocks(appId: string, blocks: LayoutBlock[]): Promise<void> {
+    public async saveQuestionBlocks(
+        appId: string,
+        blocks: LayoutBlock[],
+    ): Promise<void> {
         try {
             const associations: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `${QUESTION_BLOCKS_KEY}_${appId}`
+                    `${QUESTION_BLOCKS_KEY}_${appId}`,
                 ),
             ];
-            await this.persistence.updateByAssociations(associations, blocks, true);
+            await this.persistence.updateByAssociations(
+                associations,
+                blocks,
+                true,
+            );
         } catch (error) {
             console.warn("Save Question Blocks Error:", error);
         }
@@ -48,7 +62,7 @@ export class QuestionPersistence {
             const associations: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `${QUESTION_BLOCKS_KEY}_${appId}`
+                    `${QUESTION_BLOCKS_KEY}_${appId}`,
                 ),
             ];
             await this.persistence.removeByAssociations(associations);

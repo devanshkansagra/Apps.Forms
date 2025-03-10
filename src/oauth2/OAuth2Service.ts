@@ -41,7 +41,7 @@ export class OAuth2Service {
         return url.toString();
     }
 
-    public async getAccessTokenForUser(user: IUser, read:IRead): Promise<any> {
+    public async getAccessTokenForUser(user: IUser, read: IRead): Promise<any> {
         try {
             const association = new RocketChatAssociationRecord(
                 RocketChatAssociationModel.USER,

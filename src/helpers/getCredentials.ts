@@ -1,23 +1,20 @@
 import { IRead } from "@rocket.chat/apps-engine/definition/accessors";
 
-export async function getCredentials(
-    read: IRead,
-) {
-    const clientId = (await read
+export async function getCredentials(read: IRead) {
+    const clientId = await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById('client-id'))
+        .getValueById("client-id");
 
-    const clientSecret = (await read
+    const clientSecret = await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById('client-secret'))
+        .getValueById("client-secret");
 
-    const APIKey = (await read
+    const APIKey = await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById('gemini-api-key'))
-
+        .getValueById("gemini-api-key");
 
     return { clientId, APIKey, clientSecret };
 }

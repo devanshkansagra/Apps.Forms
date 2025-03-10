@@ -23,7 +23,7 @@ export class AuthPersistence {
                 RocketChatAssociationModel.USER,
                 user.id,
             );
-            await persis.updateByAssociation(association, {token}, true);
+            await persis.updateByAssociation(association, { token }, true);
         } catch (error) {
             console.log(error);
         }
