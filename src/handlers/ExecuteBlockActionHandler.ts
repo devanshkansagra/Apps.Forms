@@ -17,6 +17,7 @@ import { CreateFormModal } from "../modals/CreateFormModal";
 import { QuestionPersistence } from "../persistence/questionPersistence";
 import { sendMessage, sendNotification } from "../helpers/message";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
+import { AuthPersistence } from "../persistence/authPersistence";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
@@ -32,9 +33,11 @@ export class ExecuteBlockActionHandler {
         this.context = context;
     }
 
-    public async execute(): Promise<IUIKitResponse> {
+    public async execute(): Promise<IUIKitResponse | void> {
         const { actionId, triggerId, user, value, threadId, blockId, room } =
             this.context.getInteractionData();
+
+        const authPersistence = new AuthPersistence(this.app);
 
         try {
             switch (actionId) {
@@ -144,28 +147,50 @@ export class ExecuteBlockActionHandler {
                 }
 
                 case ElementEnum.SHARE_RESPONSES_ACTION: {
-                    const { data } = await this.app.sdk.getFormResponses(
-                        blockId,
+                    const token = await authPersistence.getAccessTokenForUser(
                         user,
                         this.read,
                     );
-                    const responses = data?.responses;
+                    const accessToken = token.token;
+                    const formData = await this.app.sdk.getFormData(
+                        blockId,
+                        user,
+                        this.read,
+                        accessToken.token,
+                    );
+                    const responseData = await this.app.sdk.getFormResponses(
+                        blockId,
+                        user,
+                        this.read,
+                        accessToken.token,
+                    );
+
+                    const responses = responseData.data?.responses;
+                    const questionItems = formData.data.items;
+
+                    if(!formData.statusCode.toString().startsWith('2') || !responseData.statusCode.toString().startsWith('2')) {
+                        await sendNotification(this.read, this.modify, user, room as IRoom, "Unable to share responses. Please Login!");
+                        return;
+                    }
 
                     const blocks: LayoutBlock[] = [];
                     responses.forEach((response, index) => {
                         const details =
-                            `Response #${index + 1}\n` +
-                            `Last Submitted At: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
-                        const answers = Object.keys(response.answers)
-                            .map((questionId, idx) => {
-                                const answerValue = response.answers[
-                                    questionId
-                                ].textAnswers.answers
-                                    .map((a) => a.value)
-                                    .join(", ");
-                                return `\nQuestion ${idx + 1}\nAnswer: ${answerValue}`;
-                            })
-                            .join("\n");
+                            `**Response #${index + 1}**\n` +
+                            `**Last Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
+
+                        const answers = questionItems.map((question) => {
+                            const questionId = question.questionItem?.question?.questionId;
+                            const questionTitle = question.title;
+
+                            // Find the corresponding answer using the questionId
+                            const answerObj = response.answers[questionId];
+                            const answerValue = answerObj
+                                ? answerObj.textAnswers.answers.map((a) => a.value).join(", ")
+                                : "No answer provided";
+
+                            return `\n**Question**: ${questionTitle}\n**Answer**: ${answerValue}`;
+                        }).join("\n");
 
                         blocks.push(
                             {

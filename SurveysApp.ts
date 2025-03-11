@@ -115,7 +115,7 @@ export class SurveysApp extends App {
         http: IHttp,
         persistence: IPersistence,
         modify: IModify,
-    ): Promise<IUIKitResponse> {
+    ): Promise<IUIKitResponse | void> {
         const handler = new ExecuteBlockActionHandler(
             this,
             context,

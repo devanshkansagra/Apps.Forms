@@ -10,7 +10,6 @@ import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { QuestionPersistence } from "../persistence/questionPersistence";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { FormsPersistence } from "../persistence/formsPersistence";
-import { format } from "util";
 import { FormsListModal } from "../modals/FormsListModal";
 
 export async function createForm(
