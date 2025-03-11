@@ -9,6 +9,7 @@ import { UIKitSurfaceType } from "@rocket.chat/apps-engine/definition/uikit";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
 import { ModalEnum } from "../enums/ModalEnum";
+import { ElementEnum } from "../enums/ElementEnum";
 
 export async function FormsListModal({
     read,
@@ -47,24 +48,41 @@ export async function FormsListModal({
         };
     }
     data.forEach((form, index) => {
-        blocks.push({
-            type: "section",
-            text: {
-                type: "mrkdwn",
-                text: "### " + form.info.title,
-            },
-            accessory: {
-                type: "button",
-                blockId: "",
-                actionId: "",
-                appId: id,
+        blocks.push(
+            {
+                type: "section",
                 text: {
-                    type: "plain_text",
-                    text: "See responses on google",
+                    type: "mrkdwn",
+                    text: "### " + form.info.title,
                 },
-                url: `https://docs.google.com/forms/d/${form.formId}/edit#responses`,
             },
-        });
+            {
+                type: "actions",
+                elements: [
+                    {
+                        type: "button",
+                        blockId: "",
+                        actionId: "",
+                        appId: id,
+                        text: {
+                            type: "plain_text",
+                            text: "See responses on google",
+                        },
+                        url: `https://docs.google.com/forms/d/${form.formId}/edit#responses`,
+                    },
+                    {
+                        type: "button",
+                        blockId: form.formId,
+                        actionId: ElementEnum.SHARE_RESPONSES_ACTION,
+                        appId: id,
+                        text: {
+                            type: "plain_text",
+                            text: "Share responses",
+                        },
+                    },
+                ],
+            },
+        );
         blocks.push({ type: "divider" });
     });
     return {

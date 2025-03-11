@@ -15,6 +15,8 @@ import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { TextTypes } from "../enums/TextTypes";
 import { CreateFormModal } from "../modals/CreateFormModal";
 import { QuestionPersistence } from "../persistence/questionPersistence";
+import { sendMessage, sendNotification } from "../helpers/message";
+import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
@@ -31,7 +33,7 @@ export class ExecuteBlockActionHandler {
     }
 
     public async execute(): Promise<IUIKitResponse> {
-        const { actionId, triggerId, user, value, threadId } =
+        const { actionId, triggerId, user, value, threadId, blockId, room } =
             this.context.getInteractionData();
 
         try {
@@ -139,6 +141,52 @@ export class ExecuteBlockActionHandler {
                 case ElementEnum.QUESTION_TYPE_ACTION: {
                     // Handle question type selection here if needed
                     break;
+                }
+
+                case ElementEnum.SHARE_RESPONSES_ACTION: {
+                    const { data } = await this.app.sdk.getFormResponses(
+                        blockId,
+                        user,
+                        this.read,
+                    );
+                    const responses = data?.responses;
+
+                    const blocks: LayoutBlock[] = [];
+                    responses.forEach((response, index) => {
+                        const details =
+                            `Response #${index + 1}\n` +
+                            `Last Submitted At: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
+                        const answers = Object.keys(response.answers)
+                            .map((questionId, idx) => {
+                                const answerValue = response.answers[
+                                    questionId
+                                ].textAnswers.answers
+                                    .map((a) => a.value)
+                                    .join(", ");
+                                return `\nQuestion ${idx + 1}\nAnswer: ${answerValue}`;
+                            })
+                            .join("\n");
+
+                        blocks.push(
+                            {
+                                type: "section",
+                                text: {
+                                    type: "mrkdwn",
+                                    text: details + answers,
+                                },
+                            },
+                            { type: "divider" },
+                        );
+                    });
+
+                    await sendMessage(
+                        this.read,
+                        this.modify,
+                        user,
+                        room as IRoom,
+                        "",
+                        blocks,
+                    );
                 }
 
                 case ElementEnum.LOGIN_BUTTON_ACTION: {

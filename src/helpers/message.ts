@@ -32,7 +32,7 @@ export async function sendMessage(
     modify: IModify,
     sender: IUser,
     room: IRoom,
-    message: any,
+    message?: any,
     blocks?: LayoutBlock[],
 ): Promise<void> {
     const appUser = (await read.getUserReader().getAppUser()) as IUser;

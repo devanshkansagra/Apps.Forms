@@ -194,4 +194,30 @@ export class SDK {
         }
         return createdForm;
     }
+    public async getFormResponses(
+        formId: string,
+        user: IUser,
+        read: IRead,
+    ): Promise<IHttpResponse> {
+        const token = await this.authPersistence.getAccessTokenForUser(
+            user,
+            read,
+        );
+        const accessToken = token.token;
+        let responses;
+        try {
+            responses = await this.http.get(
+                `https://forms.googleapis.com/v1/forms/${formId}/responses`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken.token}`,
+                        "Content-Type": "application/json",
+                    },
+                },
+            );
+        } catch (error) {
+            console.log(error);
+        }
+        return responses as IHttpResponse;
+    }
 }
