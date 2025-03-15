@@ -39,6 +39,7 @@ import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/I
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { sendMessage, sendNotification } from "./src/helpers/message";
+import { PostWebhookEndpoint } from "./src/endpoints/postWebhook";
 
 export class SurveysApp extends App {
     public sdk: SDK;
@@ -65,6 +66,11 @@ export class SurveysApp extends App {
             visibility: ApiVisibility.PUBLIC,
             security: ApiSecurity.UNSECURE,
             endpoints: [new WebhookEndpoint(this)],
+        });
+        await configuration.api.provideApi({
+            visibility: ApiVisibility.PUBLIC,
+            security: ApiSecurity.UNSECURE,
+            endpoints: [new PostWebhookEndpoint(this)],
         });
 
         this.sdk = new SDK(this.getAccessors().http, this);
