@@ -11,6 +11,7 @@ import { QuestionPersistence } from "../persistence/questionPersistence";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { FormsPersistence } from "../persistence/formsPersistence";
 import { FormsListModal } from "../modals/FormsListModal";
+import { SubscriptionModal } from "../modals/SubscriptionModal";
 
 export async function createForm(
     app: SurveysApp,
@@ -82,4 +83,32 @@ export async function deleteForms(
         read.getPersistenceReader(),
     );
     await formPersistence.clearFormData(room, user);
+}
+
+export async function subscribe(
+    app: SurveysApp,
+    read: IRead,
+    modify: IModify,
+    user: IUser,
+    room: IRoom,
+    persis: IPersistence,
+    triggerId: string,
+    threadId: string | undefined,
+) {
+    const formPersistence = new FormsPersistence(
+        persis,
+        read.getPersistenceReader(),
+    );
+    const data = await formPersistence.getFormData(room, user);
+    const modal = await SubscriptionModal({
+        read,
+        modify,
+        persis,
+        triggerId,
+        threadId,
+        data,
+        id: app.getID(),
+    });
+
+    await modify.getUiController().openSurfaceView(modal, { triggerId }, user);
 }

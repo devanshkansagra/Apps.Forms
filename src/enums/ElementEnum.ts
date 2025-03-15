@@ -15,5 +15,6 @@ export enum ElementEnum {
     QUESTION_ACTION = "question-action",
     LOGIN_BUTTON_BLOCK = "login-button-block",
     LOGIN_BUTTON_ACTION = "login-button-action",
-    SHARE_RESPONSES_ACTION = "share-responses-action"
+    SHARE_RESPONSES_ACTION = "share-responses-action",
+    SUBSCRIPTION_ACTION = "subscription-action"
 }

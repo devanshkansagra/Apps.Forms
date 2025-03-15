@@ -5,4 +5,6 @@ export enum ModalEnum {
     ADD_QUESTION_TITLE = "Add New Question",
     FORM_LIST_VIEW = "form-list-view",
     FORM_LIST_TITLE = "Your Forms",
+    SUBSCRIPTION_LIST_VIEW = "subscription-list-view",
+    SUBSCRIPTION_LIST_TITLE = "Subscribe to get Form Responses",
 }

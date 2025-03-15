@@ -141,8 +141,9 @@ export class ExecuteBlockActionHandler {
                     }
                     break;
                 }
-                case ElementEnum.QUESTION_TYPE_ACTION: {
-                    // Handle question type selection here if needed
+                case ElementEnum.SUBSCRIPTION_ACTION: {
+
+                    // Todo Handle subscribing the form to use webhooks
                     break;
                 }
 
@@ -166,6 +167,10 @@ export class ExecuteBlockActionHandler {
                     );
 
                     const responses = responseData.data?.responses;
+                    if(!responses) {
+                        await sendNotification(this.read, this.modify, user, room as IRoom, "Form has no responses");
+                        return;
+                    }
                     const questionItems = formData.data.items;
 
                     if(!formData.statusCode.toString().startsWith('2') || !responseData.statusCode.toString().startsWith('2')) {
@@ -177,7 +182,7 @@ export class ExecuteBlockActionHandler {
                     responses.forEach((response, index) => {
                         const details =
                             `**Response #${index + 1}**\n` +
-                            `**Last Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
+                            `**Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
 
                         const answers = questionItems.map((question) => {
                             const questionId = question.questionItem?.question?.questionId;
