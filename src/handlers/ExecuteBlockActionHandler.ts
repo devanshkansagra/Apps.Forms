@@ -6,6 +6,7 @@ import {
 import { SurveysApp } from "../../SurveysApp";
 import {
     IHttp,
+    IHttpResponse,
     IModify,
     IPersistence,
     IRead,
@@ -142,8 +143,38 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
                 case ElementEnum.SUBSCRIPTION_ACTION: {
-
-                    // Todo Handle subscribing the form to use webhooks
+                    try {
+                        const token =
+                            await authPersistence.getAccessTokenForUser(
+                                user,
+                                this.read,
+                            );
+                        const accessToken = token.token;
+                        const requestBody = {
+                            watch: {
+                                target: {
+                                    topic: {
+                                        topicName:
+                                            "projects/forms-project-451808/topics/forms-responses",
+                                    },
+                                },
+                                eventType: "RESPONSES",
+                            },
+                        };
+                        const response = await this.http.post(
+                            `https://forms.googleapis.com/v1/forms/${blockId}/watches`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${accessToken.token}`,
+                                    "Content-Type": "application/json",
+                                },
+                                content: JSON.stringify(requestBody),
+                                query: user.id
+                            },
+                        );
+                    } catch (error) {
+                        console.log(error);
+                    }
                     break;
                 }
 
@@ -161,41 +192,60 @@ export class ExecuteBlockActionHandler {
                     );
                     const responseData = await this.app.sdk.getFormResponses(
                         blockId,
-                        user,
-                        this.read,
                         accessToken.token,
                     );
 
                     const responses = responseData.data?.responses;
-                    if(!responses) {
-                        await sendNotification(this.read, this.modify, user, room as IRoom, "Form has no responses");
+                    if (!responses) {
+                        await sendNotification(
+                            this.read,
+                            this.modify,
+                            user,
+                            room as IRoom,
+                            "Form has no responses",
+                        );
                         return;
                     }
                     const questionItems = formData.data.items;
 
-                    if(!formData.statusCode.toString().startsWith('2') || !responseData.statusCode.toString().startsWith('2')) {
-                        await sendNotification(this.read, this.modify, user, room as IRoom, "Unable to share responses. Please Login!");
+                    if (
+                        !formData.statusCode.toString().startsWith("2") ||
+                        !responseData.statusCode.toString().startsWith("2")
+                    ) {
+                        await sendNotification(
+                            this.read,
+                            this.modify,
+                            user,
+                            room as IRoom,
+                            "Unable to share responses. Please Login!",
+                        );
                         return;
                     }
 
                     const blocks: LayoutBlock[] = [];
+                    responses.sort((a, b) => b.lastSubmittedTime.localeCompare(a.lastSubmittedTime));
                     responses.forEach((response, index) => {
                         const details =
-                            `**Response #${index + 1}**\n` +
+                            `**Response #${responses.length - index}**\n` +
                             `**Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
 
-                        const answers = questionItems.map((question) => {
-                            const questionId = question.questionItem?.question?.questionId;
-                            const questionTitle = question.title;
+                        const answers = questionItems
+                            .map((question) => {
+                                const questionId =
+                                    question.questionItem?.question?.questionId;
+                                const questionTitle = question.title;
 
-                            // Find the corresponding answer using the questionId
-                            const answerObj = response.answers[questionId];
-                            const answerValue = answerObj
-                                ? answerObj.textAnswers.answers.map((a) => a.value).join(", ")
-                                : "No answer provided";
+                                // Find the corresponding answer using the questionId
+                                const answerObj = response.answers[questionId];
+                                const answerValue = answerObj
+                                    ? answerObj.textAnswers.answers
+                                          .map((a) => a.value)
+                                          .join(", ")
+                                    : "No answer provided";
 
-                            return `\n**Question**: ${questionTitle}\n**Answer**: ${answerValue}`;
-                        }).join("\n");
+                                return `\n**Question**: ${questionTitle}\n**Answer**: ${answerValue}`;
+                            })
+                            .join("\n");
 
                         blocks.push(
                             {

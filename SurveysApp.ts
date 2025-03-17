@@ -43,7 +43,6 @@ import { PostWebhookEndpoint } from "./src/endpoints/postWebhook";
 
 export class SurveysApp extends App {
     public sdk: SDK;
-
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }

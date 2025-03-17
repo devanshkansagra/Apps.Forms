@@ -39,29 +39,11 @@ export class AuthPersistence {
                 .getPersistenceReader()
                 .readByAssociation(association);
             if (tokenData) {
-                this.app
-                    .getLogger()
-                    .debug(
-                        `Token data retrieved for user ${user.username}:`,
-                        tokenData,
-                    );
-                this.app
-                    .getLogger()
-                    .info(`Access token retrieved for user: ${user.username}`);
                 return tokenData;
             } else {
-                this.app
-                    .getLogger()
-                    .warn(`No access token found for user: ${user.username}`);
                 return null;
             }
         } catch (error) {
-            this.app
-                .getLogger()
-                .error(
-                    `Failed to get access token for user: ${user.username}`,
-                    error,
-                );
             throw error;
         }
     }

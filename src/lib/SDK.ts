@@ -196,8 +196,6 @@ export class SDK {
     }
     public async getFormResponses(
         formId: string,
-        user: IUser,
-        read: IRead,
         accessToken: string,
     ): Promise<IHttpResponse> {
         let responses;

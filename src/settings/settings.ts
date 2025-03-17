@@ -41,4 +41,15 @@ export const settings: ISetting[] = [
         hidden: false,
         multiline: false,
     },
+    {
+        id: "google-cloud-pub-sub-topic",
+        type: SettingType.STRING,
+        packageValue: "",
+        required: false,
+        public: false,
+        section: "CredentialSettings",
+        i18nLabel: "Google Cloud Pub/Sub Topic Name",
+        hidden: false,
+        multiline: false,
+    },
 ];
