@@ -3,5 +3,5 @@ export enum CommandEnum {
     LOGIN = "login",
     LIST = "list",
     CLEAR = "clear",
-    SUBSCRIBE = "subscribe"
+    SUBSCRIBE = "subscribe",
 }

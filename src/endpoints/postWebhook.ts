@@ -89,15 +89,11 @@ export class PostWebhookEndpoint extends ApiEndpoint {
         const room: IRoom = (await read
             .getRoomReader()
             .getById("GENERAL")) as IRoom;
-        const textSender = modify
-            .getCreator()
-            .startMessage()
-            .setBlocks(blocks);
+        const textSender = modify.getCreator().startMessage().setBlocks(blocks);
         if (room) {
             textSender.setRoom(room);
         }
         await modify.getCreator().finish(textSender);
-
 
         return {
             status: 200,

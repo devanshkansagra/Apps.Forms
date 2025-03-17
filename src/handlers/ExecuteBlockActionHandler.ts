@@ -169,7 +169,7 @@ export class ExecuteBlockActionHandler {
                                     "Content-Type": "application/json",
                                 },
                                 content: JSON.stringify(requestBody),
-                                query: user.id
+                                query: user.id,
                             },
                         );
                     } catch (error) {
@@ -223,7 +223,9 @@ export class ExecuteBlockActionHandler {
                     }
 
                     const blocks: LayoutBlock[] = [];
-                    responses.sort((a, b) => b.lastSubmittedTime.localeCompare(a.lastSubmittedTime));
+                    responses.sort((a, b) =>
+                        b.lastSubmittedTime.localeCompare(a.lastSubmittedTime),
+                    );
                     responses.forEach((response, index) => {
                         const details =
                             `**Response #${responses.length - index}**\n` +
