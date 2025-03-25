@@ -31,7 +31,7 @@ export const settings: ISetting[] = [
     },
     {
         id: "gemini-api-key",
-        type: SettingType.STRING,
+        type: SettingType.PASSWORD,
         packageValue: "",
         required: true,
         public: false,
