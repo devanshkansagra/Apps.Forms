@@ -16,5 +16,10 @@ export async function getCredentials(read: IRead) {
         .getSettings()
         .getValueById("gemini-api-key");
 
-    return { clientId, APIKey, clientSecret };
+    const topic = await read
+        .getEnvironmentReader()
+        .getSettings()
+        .getValueById("google-cloud-pub-sub-topic");
+
+    return { clientId, APIKey, clientSecret, topic };
 }

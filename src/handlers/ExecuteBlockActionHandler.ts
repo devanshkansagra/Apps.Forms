@@ -19,6 +19,7 @@ import { QuestionPersistence } from "../persistence/questionPersistence";
 import { sendMessage, sendNotification } from "../helpers/message";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { AuthPersistence } from "../persistence/authPersistence";
+import { getCredentials } from "../helpers/getCredentials";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
@@ -143,6 +144,7 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
                 case ElementEnum.SUBSCRIPTION_ACTION: {
+                    const {topic} = await getCredentials(this.read);
                     try {
                         const token =
                             await authPersistence.getAccessTokenForUser(
@@ -154,8 +156,7 @@ export class ExecuteBlockActionHandler {
                             watch: {
                                 target: {
                                     topic: {
-                                        topicName:
-                                            "projects/forms-project-451808/topics/forms-responses",
+                                        topicName: topic
                                     },
                                 },
                                 eventType: "RESPONSES",
@@ -172,6 +173,9 @@ export class ExecuteBlockActionHandler {
                                 query: user.id,
                             },
                         );
+                        if(response.data.error) {
+                            throw new Error(JSON.stringify(response.data.error));
+                        }
                     } catch (error) {
                         console.log(error);
                     }
