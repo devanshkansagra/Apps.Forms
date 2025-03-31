@@ -60,10 +60,7 @@ export class PostWebhookEndpoint extends ApiEndpoint {
 
         const responses = responseData.data?.responses;
         const questionItems = formData.data.items;
-        responses.sort((a, b) =>
-            b.lastSubmittedTime.localeCompare(a.lastSubmittedTime)
-        );
-        const response = responses[0];
+        const response = responses.reduce((max, obj) => obj.lastSubmittedTime > max.lastSubmittedTime ? obj : max, responses[0]);
         const details =
             `**New Response Recieved**\n` +
             `**Submitted At**: ${new Date(
