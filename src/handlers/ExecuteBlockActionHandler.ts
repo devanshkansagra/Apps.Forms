@@ -20,6 +20,9 @@ import { sendMessage, sendNotification } from "../helpers/message";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { AuthPersistence } from "../persistence/authPersistence";
 import { getCredentials } from "../helpers/getCredentials";
+import { ISubscription } from "../definitions/ISubscription";
+import { watch } from "fs";
+import { SubscriptionPersistence } from "../persistence/subscriptionPersistence";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
@@ -30,7 +33,7 @@ export class ExecuteBlockActionHandler {
         protected readonly read: IRead,
         protected readonly http: IHttp,
         protected readonly persistence: IPersistence,
-        protected readonly modify: IModify,
+        protected readonly modify: IModify
     ) {
         this.context = context;
     }
@@ -40,17 +43,21 @@ export class ExecuteBlockActionHandler {
             this.context.getInteractionData();
 
         const authPersistence = new AuthPersistence(this.app);
+        const subscriptionPersistence = new SubscriptionPersistence(
+            this.persistence,
+            this.read.getPersistenceReader()
+        );
 
         try {
             switch (actionId) {
                 case ElementEnum.ADD_QUESTION_ACTION: {
                     const questionPersistence = new QuestionPersistence(
                         this.persistence,
-                        this.read.getPersistenceReader(),
+                        this.read.getPersistenceReader()
                     );
                     const questionBlocks =
                         await questionPersistence.getQuestionBlocks(
-                            this.app.getID(),
+                            this.app.getID()
                         );
 
                     const questionBlockId = uuidv4();
@@ -123,7 +130,7 @@ export class ExecuteBlockActionHandler {
 
                     await questionPersistence.saveQuestionBlocks(
                         this.app.getID(),
-                        questionBlocks,
+                        questionBlocks
                     );
 
                     const modal = await CreateFormModal({
@@ -144,19 +151,19 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
                 case ElementEnum.SUBSCRIPTION_ACTION: {
-                    const {topic} = await getCredentials(this.read);
+                    const { topic } = await getCredentials(this.read);
                     try {
                         const token =
                             await authPersistence.getAccessTokenForUser(
                                 user,
-                                this.read,
+                                this.read
                             );
                         const accessToken = token.token;
                         const requestBody = {
                             watch: {
                                 target: {
                                     topic: {
-                                        topicName: topic
+                                        topicName: topic,
                                     },
                                 },
                                 eventType: "RESPONSES",
@@ -171,10 +178,26 @@ export class ExecuteBlockActionHandler {
                                 },
                                 content: JSON.stringify(requestBody),
                                 query: user.id,
-                            },
+                            }
                         );
-                        if(response.data.error) {
-                            throw new Error(JSON.stringify(response.data.error));
+                        if (response.data.error) {
+                            throw new Error(
+                                JSON.stringify(response.data.error)
+                            );
+                        } else {
+                            const formId = blockId;
+                            const userId = user.id;
+                            const roomId = room?.id;
+                            const watchId = response?.data.id;
+
+                            const subscription: ISubscription = {
+                                formId: formId,
+                                watchId: watchId,
+                                userId: userId,
+                                roomId: roomId as string,
+                            };
+
+                            await subscriptionPersistence.subscribeForm(subscription);
                         }
                     } catch (error) {
                         console.log(error);
@@ -185,18 +208,18 @@ export class ExecuteBlockActionHandler {
                 case ElementEnum.SHARE_RESPONSES_ACTION: {
                     const token = await authPersistence.getAccessTokenForUser(
                         user,
-                        this.read,
+                        this.read
                     );
                     const accessToken = token.token;
                     const formData = await this.app.sdk.getFormData(
                         blockId,
                         user,
                         this.read,
-                        accessToken.token,
+                        accessToken.token
                     );
                     const responseData = await this.app.sdk.getFormResponses(
                         blockId,
-                        accessToken.token,
+                        accessToken.token
                     );
 
                     const responses = responseData.data?.responses;
@@ -206,7 +229,7 @@ export class ExecuteBlockActionHandler {
                             this.modify,
                             user,
                             room as IRoom,
-                            "Form has no responses",
+                            "Form has no responses"
                         );
                         return;
                     }
@@ -221,19 +244,21 @@ export class ExecuteBlockActionHandler {
                             this.modify,
                             user,
                             room as IRoom,
-                            "Unable to share responses. Please Login!",
+                            "Unable to share responses. Please Login!"
                         );
                         return;
                     }
 
                     const blocks: LayoutBlock[] = [];
                     responses.sort((a, b) =>
-                        b.lastSubmittedTime.localeCompare(a.lastSubmittedTime),
+                        b.lastSubmittedTime.localeCompare(a.lastSubmittedTime)
                     );
                     responses.forEach((response, index) => {
                         const details =
                             `**Response #${responses.length - index}**\n` +
-                            `**Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
+                            `**Submitted At**: ${new Date(
+                                response.lastSubmittedTime
+                            ).toLocaleString()}\n`;
 
                         const answers = questionItems
                             .map((question) => {
@@ -261,7 +286,7 @@ export class ExecuteBlockActionHandler {
                                     text: details + answers,
                                 },
                             },
-                            { type: "divider" },
+                            { type: "divider" }
                         );
                     });
 
@@ -271,7 +296,7 @@ export class ExecuteBlockActionHandler {
                         user,
                         room as IRoom,
                         "",
-                        blocks,
+                        blocks
                     );
                 }
 

@@ -15,6 +15,7 @@ import { AuthPersistence } from "../persistence/authPersistence";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
+import { SubscriptionPersistence } from "../persistence/subscriptionPersistence";
 
 export class PostWebhookEndpoint extends ApiEndpoint {
     public path: string = "webhook";
@@ -28,36 +29,46 @@ export class PostWebhookEndpoint extends ApiEndpoint {
         read: IRead,
         modify: IModify,
         http: IHttp,
-        persis: IPersistence,
+        persis: IPersistence
     ): Promise<IApiResponse> {
+        const subscriptionPersistence = new SubscriptionPersistence(
+            persis,
+            read.getPersistenceReader()
+        );
         let blocks: LayoutBlock[] = [];
-        const user = await read.getUserReader().getById("bqK6RNoR86DEhSCMJ");
+        const formId = request.content.message.attributes.formId;
+        const watchId = request.content.message.attributes.watchId;
+
+        const subscriptions = await subscriptionPersistence.getSubscribedFormData(formId, watchId);
+        const user = await read.getUserReader().getById(subscriptions.userId);
         const authPersistence = new AuthPersistence(this.app);
         const accessToken = await authPersistence.getAccessTokenForUser(
             user,
-            read,
+            read
         );
 
         const responseData = await this.app.sdk.getFormResponses(
-            request.content.message.attributes.formId,
-            accessToken.token.token,
+            formId,
+            accessToken.token.token
         );
         const formData = await this.app.sdk.getFormData(
-            request.content.message.attributes.formId,
+            formId,
             user,
             read,
-            accessToken.token.token,
+            accessToken.token.token
         );
 
         const responses = responseData.data?.responses;
         const questionItems = formData.data.items;
         responses.sort((a, b) =>
-            b.lastSubmittedTime.localeCompare(a.lastSubmittedTime),
+            b.lastSubmittedTime.localeCompare(a.lastSubmittedTime)
         );
         const response = responses[0];
         const details =
             `**New Response Recieved**\n` +
-            `**Submitted At**: ${new Date(response.lastSubmittedTime).toLocaleString()}\n`;
+            `**Submitted At**: ${new Date(
+                response.lastSubmittedTime
+            ).toLocaleString()}\n`;
 
         const answers = questionItems
             .map((question) => {
@@ -83,12 +94,12 @@ export class PostWebhookEndpoint extends ApiEndpoint {
                     text: details + answers,
                 },
             },
-            { type: "divider" },
+            { type: "divider" }
         );
 
         const room: IRoom = (await read
             .getRoomReader()
-            .getById("GENERAL")) as IRoom;
+            .getById(subscriptions.roomId)) as IRoom;
         const textSender = modify.getCreator().startMessage().setBlocks(blocks);
         if (room) {
             textSender.setRoom(room);
