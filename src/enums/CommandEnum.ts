@@ -4,4 +4,5 @@ export enum CommandEnum {
     LIST = "list",
     CLEAR = "clear",
     SUBSCRIBE = "subscribe",
+    AI_CREATE = "ai-create",
 }

@@ -112,3 +112,15 @@ export async function subscribe(
 
     await modify.getUiController().openSurfaceView(modal, { triggerId }, user);
 }
+
+export async function aiCreate(
+    app: SurveysApp,
+    read: IRead,
+    modify: IModify,
+    user: IUser,
+    room: IRoom,
+    persis: IPersistence,
+    prompt: string,
+) {
+    await app.sdk.createAIForms(app, read, modify, user, room, persis, prompt);
+}

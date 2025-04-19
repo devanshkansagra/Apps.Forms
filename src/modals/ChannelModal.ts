@@ -37,7 +37,7 @@ export async function ChannelModal({
             text: "Select Channel to share",
         },
         element: {
-            type: 'multi_channels_select',
+            type: "multi_channels_select",
             actionId: "usersActionId",
             appId: id,
             blockId: "usersBlockId",

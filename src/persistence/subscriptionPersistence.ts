@@ -11,7 +11,7 @@ import {
 export class SubscriptionPersistence {
     constructor(
         private readonly persistence: IPersistence,
-        private readonly persistenceRead: IPersistenceRead
+        private readonly persistenceRead: IPersistenceRead,
     ) {}
 
     public async subscribeForm(subscription: ISubscription): Promise<void> {
@@ -19,57 +19,60 @@ export class SubscriptionPersistence {
             const association: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `subscription`
+                    `subscription`,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `form:${subscription.formId}`
+                    `form:${subscription.formId}`,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `watch:${subscription.watchId}`
+                    `watch:${subscription.watchId}`,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.ROOM,
-                    subscription.roomId
+                    subscription.roomId,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.USER,
-                    subscription.userId
+                    subscription.userId,
                 ),
             ];
 
             await this.persistence.updateByAssociations(
                 association,
                 subscription,
-                true
+                true,
             );
         } catch (error) {
             console.log(error);
         }
     }
 
-    public async getSubscribedFormData(formId: string, watchId: string): Promise<ISubscription> {
+    public async getSubscribedFormData(
+        formId: string,
+        watchId: string,
+    ): Promise<ISubscription> {
         let subscription: ISubscription | null = null;
         try {
             const associations: Array<RocketChatAssociationRecord> = [
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `form:${formId}`
+                    `form:${formId}`,
                 ),
                 new RocketChatAssociationRecord(
                     RocketChatAssociationModel.MISC,
-                    `watch:${watchId}`
+                    `watch:${watchId}`,
                 ),
-            ]
+            ];
 
-            const results = await this.persistenceRead.readByAssociations(associations);
+            const results =
+                await this.persistenceRead.readByAssociations(associations);
             subscription = results[0] as ISubscription;
-        }
-        catch(error) {
+        } catch (error) {
             console.log(error);
         }
-        
+
         return subscription!;
     }
 }

@@ -18,6 +18,7 @@ import {
     deleteForms,
     getForms,
     subscribe,
+    aiCreate,
 } from "../handlers/FormHandler";
 import { handleLogin } from "../handlers/AuthorizationHandler";
 
@@ -47,19 +48,35 @@ export class CommandUtility implements ICommandUtility {
     }
 
     public async resolveCommand(): Promise<void> {
+        const [subCommand, ...rest] = this.params;
+        let prompt = "";
+
         if (this.params.length > 0) {
-            switch (this.params[0]) {
+            switch (subCommand.toLowerCase()) {
                 case CommandEnum.CREATE: {
-                    await createForm(
-                        this.app,
-                        this.read,
-                        this.modify,
-                        this.sender,
-                        this.http,
-                        this.persis,
-                        this.triggerId,
-                        this.threadId,
-                    );
+                    if (rest.length !== 0) {
+                        prompt = this.params.join(" ");
+                        await aiCreate(
+                            this.app,
+                            this.read,
+                            this.modify,
+                            this.sender,
+                            this.room,
+                            this.persis,
+                            prompt,
+                        );
+                    } else {
+                        await createForm(
+                            this.app,
+                            this.read,
+                            this.modify,
+                            this.sender,
+                            this.http,
+                            this.persis,
+                            this.triggerId,
+                            this.threadId,
+                        );
+                    }
                     break;
                 }
                 case CommandEnum.LOGIN: {
@@ -111,8 +128,19 @@ export class CommandUtility implements ICommandUtility {
                     );
                     break;
                 }
+
                 default: {
-                    console.log("Unknown command: " + this.params[0]);
+                    prompt = this.params.join(" ");
+                    await aiCreate(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.persis,
+                        prompt,
+                    );
+                    break;
                 }
             }
         } else {

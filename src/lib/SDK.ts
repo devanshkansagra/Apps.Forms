@@ -238,4 +238,60 @@ export class SDK {
 
         return formData as IHttpResponse;
     }
+
+    public async createAIForms(
+        app: SurveysApp,
+        read: IRead,
+        modify: IModify,
+        user: IUser,
+        room: IRoom,
+        persis: IPersistence,
+        prompt: string,
+    ): Promise<void> {
+        const { APIKey } = await getCredentials(read);
+
+        const formStructure = `
+             {
+                info: {
+                    title: string; // Title of the form
+                    description: string // Description of form
+                };
+                items: Array<{
+                    title: string; // Title of the question
+                    type: string; // (e.g., TEXT, MULTIPLE_CHOICE, PARAGAPH, CHECKBOX)
+                    required: boolean; // Whether the field is mandatory
+                    options?: Array<{
+                        value: string; // Option value (only for MULTIPLE_CHOICE or CHECKBOX type)
+                    }>;
+                }>;
+            }
+        `;
+        let finalPrompt =
+            `Respond with only a valid, minified JSON object (in text form only with no extra text) for creating a Google Form. The JSON should follow strictly follow this structure ${formStructure} . If the prompt provided to you is strictly not in context of creating a google form then send an error text which says 'This prompt is invalid, I can only assist with creating google form'". Here's the Prompt: ` +
+            prompt;
+        const response = await this.http.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${APIKey}`,
+            {
+                content: JSON.stringify({
+                    contents: [
+                        { role: "user", parts: [{ text: finalPrompt }] },
+                    ],
+                }),
+            },
+        );
+
+        const input = response.data.candidates[0].content.parts[0].text;
+
+        // Check if the input starts with ```json and ends with ```
+        if (input.startsWith("```json") && input.endsWith("```")) {
+            const cleanedInput = input
+                .replace(/^```json\n/, "")
+                .replace(/\n```$/, "");
+            console.log(JSON.parse(cleanedInput));
+        } else {
+            console.error(
+                "Invalid response format. Expected JSON wrapped in ```json and ```.",
+            );
+        }
+    }
 }
