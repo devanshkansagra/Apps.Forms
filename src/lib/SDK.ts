@@ -68,6 +68,31 @@ export class SDK {
         return accessToken;
     }
 
+    public async refreshAccessToken(
+        user: IUser,
+        read: IRead,
+        refreshToken: string,
+        persis: IPersistence
+    ) {
+        const { clientId, clientSecret } = await getCredentials(read);
+        const response = await this.http.post(OAuthURL.REFRESH_TOKEN_URI, {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            content: `client_id=${clientId}&client_secret=${clientSecret}&refresh_token=${refreshToken}&grant_type=refresh_token`,
+        });
+        if (response.statusCode.toString().startsWith("2")) {
+            const newAccessToken = {
+                token: response.data?.access_token,
+                expiresAt: response.data?.expires_in,
+                refreshToken: refreshToken,
+                scope: response.data?.scope,
+            };
+
+            await this.authPersistence.setAccessTokenForUser(newAccessToken, user, persis);
+        }
+    }
+
     public async revokeAccessToken(
         read: IRead,
         modify: IModify,

@@ -29,7 +29,7 @@ export class WebhookEndpoint extends ApiEndpoint {
         read: IRead,
         modify: IModify,
         http: IHttp,
-        persis: IPersistence,
+        persis: IPersistence
     ): Promise<IApiResponse> {
         const { code, state } = request.query;
         const user: IUser = await read.getUserReader().getById(state);
@@ -40,15 +40,27 @@ export class WebhookEndpoint extends ApiEndpoint {
             user,
             modify,
             http,
-            persis,
+            persis
         );
 
         if (!token) {
             return { status: 400, content: "Unable to get Token" };
         }
+
         const task = {
-            id: 'refreshToken',
-        }
+            id: "refreshToken",
+            processor: await this.app.sdk
+                .refreshAccessToken(
+                    user,
+                    read,
+                    token.refreshToken as string,
+                    persis
+                )
+                .then(() => console.log("Access token is refreshed")),
+            interval: "10 seconds",
+        };
+
+        await modify.getScheduler().scheduleRecurring(task);
         return { status: 200, content: "Authorized Successfully" };
     }
 }
