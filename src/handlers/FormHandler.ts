@@ -4,6 +4,7 @@ import {
     IModify,
     IPersistence,
     IRead,
+    IUIKitSurfaceViewParam,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { CreateFormModal } from "../modals/CreateFormModal";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
@@ -18,6 +19,7 @@ export async function createForm(
     read: IRead,
     modify: IModify,
     sender: IUser,
+    room: IRoom,
     http: IHttp,
     persis: IPersistence,
     triggerId: string | undefined,
@@ -26,14 +28,17 @@ export async function createForm(
     if (triggerId) {
         // Create the form modal
         const modal = await CreateFormModal({
+            app,
             read,
             modify,
             http,
+            sender,
+            room,
             persis,
             triggerId,
             threadId,
             id: app.getID(),
-        });
+        }) as IUIKitSurfaceViewParam;
 
         // Open the modal
         await modify

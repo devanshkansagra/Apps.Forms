@@ -6,7 +6,6 @@ import {
 import { SurveysApp } from "../../SurveysApp";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
-import { OAuth2Service } from "./OAuth2Service";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
 import { ElementEnum } from "../enums/ElementEnum";
 import { sendNotification } from "../helpers/message";

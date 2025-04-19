@@ -20,7 +20,7 @@ import {
     subscribe,
     aiCreate,
 } from "../handlers/FormHandler";
-import { handleLogin } from "../handlers/AuthorizationHandler";
+import { handleLogin, logout } from "../handlers/AuthorizationHandler";
 
 export class CommandUtility implements ICommandUtility {
     app: SurveysApp;
@@ -71,6 +71,7 @@ export class CommandUtility implements ICommandUtility {
                             this.read,
                             this.modify,
                             this.sender,
+                            this.room,
                             this.http,
                             this.persis,
                             this.triggerId,
@@ -126,6 +127,17 @@ export class CommandUtility implements ICommandUtility {
                         this.room,
                         this.persis,
                     );
+                    break;
+                }
+                case CommandEnum.LOGOUT: {
+                    await logout(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.persis,
+                    )
                     break;
                 }
 

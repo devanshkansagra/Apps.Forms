@@ -8,17 +8,18 @@ import {
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { SurveysApp } from "../../SurveysApp";
 import { getCredentials } from "../helpers/getCredentials";
-import { OAuthURL } from "../enums/OAuthSettingEnum";
+import { OAuthSetting, OAuthURL } from "../enums/OAuthSettingEnum";
 import { AuthPersistence } from "../persistence/authPersistence";
 import { ElementEnum } from "../enums/ElementEnum";
 import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { sendNotification } from "../helpers/message";
+import { isModalView } from "@rocket.chat/ui-kit";
 
 export class SDK {
     constructor(
         private readonly http: IHttp,
-        private readonly app: SurveysApp,
+        private readonly app: SurveysApp
     ) {}
     public authPersistence = new AuthPersistence(this.app as SurveysApp);
     public async getAccessToken(
@@ -27,22 +28,19 @@ export class SDK {
         user: IUser,
         modify: IModify,
         http: IHttp,
-        persis: IPersistence,
+        persis: IPersistence
     ): Promise<IAuthData> {
         const { clientId, clientSecret } = await getCredentials(read);
         const redirectURL = OAuthURL.REDIRECT_URL;
 
         const room = (await read.getRoomReader().getById("GENERAL")) as IRoom;
 
-        const response = await http.post(
-            "https://oauth2.googleapis.com/token",
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                content: `code=${code}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectURL}&grant_type=authorization_code`,
+        const response = await http.post(OAuthURL.ACCESSS_TOKEN_URI, {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
             },
-        );
+            content: `code=${code}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectURL}&grant_type=authorization_code`,
+        });
 
         let accessToken: any = {};
         if (response) {
@@ -58,22 +56,70 @@ export class SDK {
                 modify,
                 user,
                 room,
-                "Login successful 🚀",
+                "Login successful 🚀"
             );
 
             await this.authPersistence.setAccessTokenForUser(
                 accessToken,
                 user,
-                persis,
+                persis
             );
         }
         return accessToken;
     }
 
+    public async revokeAccessToken(
+        read: IRead,
+        modify: IModify,
+        user: IUser,
+        room: IRoom,
+        persistence: IPersistence
+    ) {
+        const token = await this.authPersistence.getAccessTokenForUser(
+            user,
+            read
+        );
+        if (!token) {
+            await sendNotification(
+                read,
+                modify,
+                user,
+                room,
+                "You are already logged out"
+            );
+        } else {
+            const access_token = token.token;
+
+            const response = await this.http.post(
+                "https://oauth2.googleapis.com/revoke",
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    content: `token=${access_token.token}`,
+                }
+            );
+
+            if (response.statusCode.toString().startsWith("2")) {
+                await this.authPersistence.deleteAccessTokenForUser(
+                    user,
+                    persistence
+                );
+                await sendNotification(
+                    read,
+                    modify,
+                    user,
+                    room,
+                    "Logged out successfully"
+                );
+            }
+        }
+    }
+
     public async createGoogleForm(formData: any, user: IUser, read: IRead) {
         const token = await this.authPersistence.getAccessTokenForUser(
             user,
-            read,
+            read
         );
         const accessToken = token.token;
 
@@ -91,12 +137,12 @@ export class SDK {
                         title: formTitle,
                     },
                 }),
-            },
+            }
         );
 
         if (!createFormResponse.statusCode.toString().startsWith("2")) {
             console.log(
-                "Create Form error: " + JSON.stringify(createFormResponse),
+                "Create Form error: " + JSON.stringify(createFormResponse)
             );
             return;
         }
@@ -119,10 +165,10 @@ export class SDK {
         const questionTextKeys = Object.keys(formData).filter(
             (key) =>
                 key.startsWith(ElementEnum.QUESTION_ACTION) &&
-                !key.includes(ElementEnum.QUESTION_TYPE_ACTION),
+                !key.includes(ElementEnum.QUESTION_TYPE_ACTION)
         );
         const questionTypeKeys = Object.keys(formData).filter((key) =>
-            key.startsWith(ElementEnum.QUESTION_TYPE_ACTION),
+            key.startsWith(ElementEnum.QUESTION_TYPE_ACTION)
         );
 
         if (questionTextKeys.length !== questionTypeKeys.length) {
@@ -186,7 +232,7 @@ export class SDK {
                 content: JSON.stringify({
                     requests: requests,
                 }),
-            },
+            }
         );
         if (!batchUpdateResponse.statusCode.toString().startsWith("2")) {
             console.log("BatchUpdate Error:", batchUpdateResponse);
@@ -196,7 +242,7 @@ export class SDK {
     }
     public async getFormResponses(
         formId: string,
-        accessToken: string,
+        accessToken: string
     ): Promise<IHttpResponse> {
         let responses;
         try {
@@ -207,7 +253,7 @@ export class SDK {
                         Authorization: `Bearer ${accessToken}`,
                         "Content-Type": "application/json",
                     },
-                },
+                }
             );
         } catch (error) {
             console.log(error);
@@ -219,7 +265,7 @@ export class SDK {
         formId: string,
         user: IUser,
         read: IRead,
-        accessToken: string,
+        accessToken: string
     ): Promise<IHttpResponse> {
         let formData;
         try {
@@ -230,7 +276,7 @@ export class SDK {
                         Authorization: `Bearer ${accessToken}`,
                         "Content-Type": "application/json",
                     },
-                },
+                }
             );
         } catch (error) {
             console.log(error);
@@ -246,7 +292,7 @@ export class SDK {
         user: IUser,
         room: IRoom,
         persis: IPersistence,
-        prompt: string,
+        prompt: string
     ): Promise<void> {
         const { APIKey } = await getCredentials(read);
 
@@ -277,7 +323,7 @@ export class SDK {
                         { role: "user", parts: [{ text: finalPrompt }] },
                     ],
                 }),
-            },
+            }
         );
 
         const input = response.data.candidates[0].content.parts[0].text;
@@ -290,7 +336,7 @@ export class SDK {
             console.log(JSON.parse(cleanedInput));
         } else {
             console.error(
-                "Invalid response format. Expected JSON wrapped in ```json and ```.",
+                "Invalid response format. Expected JSON wrapped in ```json and ```."
             );
         }
     }

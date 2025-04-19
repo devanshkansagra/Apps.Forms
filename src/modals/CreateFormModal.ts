@@ -11,25 +11,42 @@ import { TextTypes } from "../enums/TextTypes";
 import { ModalEnum } from "../enums/ModalEnum";
 import { ElementEnum } from "../enums/ElementEnum";
 import { QuestionPersistence } from "../persistence/questionPersistence";
+import { AuthPersistence } from "../persistence/authPersistence";
+import { SurveysApp } from "../../SurveysApp";
+import { IUser } from "@rocket.chat/apps-engine/definition/users";
+import { sendNotification } from "../helpers/message";
+import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 
 export async function CreateFormModal({
+    app,
     read,
     modify,
     http,
+    sender,
+    room,
     persis,
     triggerId,
     threadId,
     id,
 }: {
+    app: SurveysApp;
     read: IRead;
     modify: IModify;
     http: IHttp;
+    sender: IUser;
+    room: IRoom | undefined;
     persis: IPersistence;
     triggerId: string | undefined;
     threadId: string | undefined;
     id: string;
 }): Promise<IUIKitSurfaceViewParam> {
     let blocks: LayoutBlock[] = [];
+    const authPersistence = new AuthPersistence(app);
+    const token = await authPersistence.getAccessTokenForUser(sender, read);
+    if(!token) {
+        await sendNotification(read, modify, sender, room as IRoom,"You are not logged in");
+        return {} as IUIKitSurfaceViewParam;
+    }
     blocks.push(
         {
             type: "input",

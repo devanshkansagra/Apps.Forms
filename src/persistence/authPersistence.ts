@@ -44,7 +44,17 @@ export class AuthPersistence {
                 return null;
             }
         } catch (error) {
-            throw error;
+            console.log(error);
+        }
+    }
+
+    public async deleteAccessTokenForUser(user:IUser, persis: IPersistence): Promise<any> {
+        try {
+            const association = new RocketChatAssociationRecord(RocketChatAssociationModel.USER, user.id);
+            await persis.removeByAssociation(association);
+        }
+        catch(error) {
+            console.log(error);
         }
     }
 }

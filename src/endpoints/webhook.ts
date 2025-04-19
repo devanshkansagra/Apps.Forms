@@ -46,6 +46,9 @@ export class WebhookEndpoint extends ApiEndpoint {
         if (!token) {
             return { status: 400, content: "Unable to get Token" };
         }
+        const task = {
+            id: 'refreshToken',
+        }
         return { status: 200, content: "Authorized Successfully" };
     }
 }

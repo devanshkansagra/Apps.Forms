@@ -10,6 +10,7 @@ import {
     IModify,
     IPersistence,
     IRead,
+    IUIKitSurfaceViewParam,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { ElementEnum } from "../enums/ElementEnum";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
@@ -134,14 +135,17 @@ export class ExecuteBlockActionHandler {
                     );
 
                     const modal = await CreateFormModal({
+                        app: this.app,
                         read: this.read,
                         modify: this.modify,
                         http: this.http,
+                        sender: user,
+                        room: room,
                         persis: this.persistence,
                         triggerId: triggerId,
                         threadId: threadId,
                         id: this.app.getID(),
-                    });
+                    }) as IUIKitSurfaceViewParam;
 
                     if (triggerId) {
                         await this.modify

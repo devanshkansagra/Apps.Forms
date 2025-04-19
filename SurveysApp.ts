@@ -31,8 +31,7 @@ import {
     ApiSecurity,
     ApiVisibility,
 } from "@rocket.chat/apps-engine/definition/api";
-import { WebhookEndpoint } from "./src/endpoints/webhook";
-import { OAuth2Service } from "./src/oauth2/OAuth2Service";
+import { WebhookEndpoint } from "./src/endpoints/webhook"
 import { OAuthURL } from "./src/enums/OAuthSettingEnum";
 import { SDK } from "./src/lib/SDK";
 import { IOAuthAppParams } from "@rocket.chat/apps-engine/definition/accessors/IOAuthApp";
