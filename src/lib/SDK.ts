@@ -202,9 +202,10 @@ export class SDK {
         questionTextKeys.forEach((questionTextKey, index) => {
             const questionText = formData[questionTextKey];
             const questionType = formData[questionTypeKeys[index]];
+            const questionOptions = [];
 
             let questionItem: any;
-            if (questionType === "short-answer") {
+            if (questionType === "TEXT") {
                 questionItem = {
                     createItem: {
                         item: {
@@ -222,7 +223,7 @@ export class SDK {
                         },
                     },
                 };
-            } else if (questionType === "paragraph") {
+            } else if (questionType === "PARAGRAPH") {
                 questionItem = {
                     createItem: {
                         item: {
@@ -240,6 +241,52 @@ export class SDK {
                         },
                     },
                 };
+            } else if (questionType === "RADIO") {
+                questionItem = {
+                    createItem: {
+                        item: {
+                            title: questionText,
+                            questionItem: {
+                                question: {
+                                    choiceQuestion: {
+                                        type: 'radio',
+                                        options: [
+                                            {value: 'option1'},
+                                            {value: 'option2'},
+                                            {value: 'option3'}
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        location: {
+                            index: index
+                        }
+                    }
+                }
+            } else if(questionType === "CHECKBOX") {
+                questionItem = {
+                    createItem: {
+                        item: {
+                            title: questionText,
+                            questionItem: {
+                                question: {
+                                    choiceQuestion: {
+                                        type: 'checkbox',
+                                        options: [
+                                            {value: 'option1'},
+                                            {value: 'option2'},
+                                            {value: 'option3'}
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        location: {
+                            index: index
+                        }
+                    }
+                }
             }
 
             if (questionItem) {
@@ -352,17 +399,6 @@ export class SDK {
         );
 
         const input = response.data.candidates[0].content.parts[0].text;
-
-        // Check if the input starts with ```json and ends with ```
-        if (input.startsWith("```json") && input.endsWith("```")) {
-            const cleanedInput = input
-                .replace(/^```json\n/, "")
-                .replace(/\n```$/, "");
-            console.log(JSON.parse(cleanedInput));
-        } else {
-            console.error(
-                "Invalid response format. Expected JSON wrapped in ```json and ```."
-            );
-        }
+        console.log(input);
     }
 }

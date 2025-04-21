@@ -47,7 +47,7 @@ export class ExecuteViewSubmitHandler {
             this.read.getPersistenceReader(),
         );
 
-        const sdk = new SDK(this.http, this.app);
+        const sdk = this.app.sdk;
 
         try {
             switch (view.id) {

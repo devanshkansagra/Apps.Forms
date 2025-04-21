@@ -133,11 +133,11 @@ export class SurveysApp extends App {
     }
 
     public async executeViewClosedHandler(
+        context: UIKitViewCloseInteractionContext,
         read: IRead,
         http: IHttp,
         persistence: IPersistence,
-        modify: IModify,
-        context: UIKitViewCloseInteractionContext,
+        modify: IModify
     ): Promise<IUIKitResponse> {
         const handler = new ExecuteViewClosedHandler(
             this,
@@ -145,9 +145,8 @@ export class SurveysApp extends App {
             http,
             persistence,
             modify,
-            context,
         );
 
-        return await handler.execute();
+        return await handler.execute(context);
     }
 }

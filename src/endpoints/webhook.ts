@@ -46,21 +46,6 @@ export class WebhookEndpoint extends ApiEndpoint {
         if (!token) {
             return { status: 400, content: "Unable to get Token" };
         }
-
-        const task = {
-            id: "refreshToken",
-            processor: await this.app.sdk
-                .refreshAccessToken(
-                    user,
-                    read,
-                    token.refreshToken as string,
-                    persis
-                )
-                .then(() => console.log("Access token is refreshed")),
-            interval: "10 seconds",
-        };
-
-        await modify.getScheduler().scheduleRecurring(task);
         return { status: 200, content: "Authorized Successfully" };
     }
 }
