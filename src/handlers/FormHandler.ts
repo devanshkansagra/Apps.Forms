@@ -13,6 +13,8 @@ import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { FormsPersistence } from "../persistence/formsPersistence";
 import { FormsListModal } from "../modals/FormsListModal";
 import { SubscriptionModal } from "../modals/SubscriptionModal";
+import { ModalPersistence } from "../persistence/ModalPersistence";
+import { ModalEnum } from "../enums/ModalEnum";
 
 export async function createForm(
     app: SurveysApp,
@@ -87,7 +89,9 @@ export async function deleteForms(
         persis,
         read.getPersistenceReader(),
     );
+    const modalPersistence = new ModalPersistence(this.persistence, this.read.getPersistenceReader(), user.id, ModalEnum.CREATE_FORM_VIEW);
     await formPersistence.clearFormData(room, user);
+    await modalPersistence.clearAllInteractionActionId();
 }
 
 export async function subscribe(

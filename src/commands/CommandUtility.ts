@@ -54,30 +54,17 @@ export class CommandUtility implements ICommandUtility {
         if (this.params.length > 0) {
             switch (subCommand.toLowerCase()) {
                 case CommandEnum.CREATE: {
-                    if (rest.length !== 0) {
-                        prompt = this.params.join(" ");
-                        await aiCreate(
-                            this.app,
-                            this.read,
-                            this.modify,
-                            this.sender,
-                            this.room,
-                            this.persis,
-                            prompt,
-                        );
-                    } else {
-                        await createForm(
-                            this.app,
-                            this.read,
-                            this.modify,
-                            this.sender,
-                            this.room,
-                            this.http,
-                            this.persis,
-                            this.triggerId,
-                            this.threadId,
-                        );
-                    }
+                    await createForm(
+                        this.app,
+                        this.read,
+                        this.modify,
+                        this.sender,
+                        this.room,
+                        this.http,
+                        this.persis,
+                        this.triggerId,
+                        this.threadId
+                    );
                     break;
                 }
                 case CommandEnum.LOGIN: {
@@ -87,7 +74,7 @@ export class CommandUtility implements ICommandUtility {
                         this.modify,
                         this.sender,
                         this.room,
-                        this.persis,
+                        this.persis
                     );
                     break;
                 }
@@ -101,7 +88,7 @@ export class CommandUtility implements ICommandUtility {
                         this.room,
                         this.persis,
                         this.triggerId as string,
-                        this.threadId,
+                        this.threadId
                     );
                     break;
                 }
@@ -114,7 +101,7 @@ export class CommandUtility implements ICommandUtility {
                         this.room,
                         this.persis,
                         this.triggerId as string,
-                        this.threadId,
+                        this.threadId
                     );
                     break;
                 }
@@ -125,7 +112,7 @@ export class CommandUtility implements ICommandUtility {
                         this.modify,
                         this.sender,
                         this.room,
-                        this.persis,
+                        this.persis
                     );
                     break;
                 }
@@ -136,8 +123,8 @@ export class CommandUtility implements ICommandUtility {
                         this.modify,
                         this.sender,
                         this.room,
-                        this.persis,
-                    )
+                        this.persis
+                    );
                     break;
                 }
 
@@ -150,7 +137,7 @@ export class CommandUtility implements ICommandUtility {
                         this.sender,
                         this.room,
                         this.persis,
-                        prompt,
+                        prompt
                     );
                     break;
                 }

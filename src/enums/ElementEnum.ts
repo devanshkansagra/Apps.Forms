@@ -9,8 +9,8 @@ export enum ElementEnum {
     QUESTION_TITLE_BLOCK = "question-title-block",
     QUESTION_TYPE_ACTION = "question-type-action",
     QUESTION_TYPE_BLOCK = "question-type-block",
-    OPTIONS_BLOCK = "options-block",
-    OPTIONS_ACTION = "options-action",
+    OPTIONS_BLOCK = "options-title-block",
+    OPTIONS_ACTION = "options-title-action",
     QUESTION_BLOCK = "question-block",
     QUESTION_ACTION = "question-action",
     LOGIN_BUTTON_BLOCK = "login-button-block",
@@ -21,4 +21,7 @@ export enum ElementEnum {
     SUBSCRIPTION_BLOCK = "subscription-block",
     ADD_OPTION_BLOCK = "add-option-block",
     ADD_OPTION_ACTION = "add-option-action",
+    QUESTION_NAME = 'QuestionName',
+    QUESTION_TYPE = 'QuestionType',
+    INPUT_FIELD = 'inputField',
 }

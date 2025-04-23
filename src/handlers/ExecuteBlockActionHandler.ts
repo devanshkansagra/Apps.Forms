@@ -23,6 +23,8 @@ import { AuthPersistence } from "../persistence/authPersistence";
 import { getCredentials } from "../helpers/getCredentials";
 import { ISubscription } from "../definitions/ISubscription";
 import { SubscriptionPersistence } from "../persistence/subscriptionPersistence";
+import { ModalPersistence } from "../persistence/ModalPersistence";
+import { OtherEnum } from "../enums/OtherEnums";
 
 export class ExecuteBlockActionHandler {
     private context: UIKitBlockInteractionContext;
@@ -39,8 +41,16 @@ export class ExecuteBlockActionHandler {
     }
 
     public async execute(): Promise<IUIKitResponse | void> {
-        const { actionId, triggerId, user, value, threadId, blockId, room } =
-            this.context.getInteractionData();
+        const {
+            actionId,
+            triggerId,
+            user,
+            value,
+            threadId,
+            blockId,
+            room,
+            container,
+        } = this.context.getInteractionData();
 
         const authPersistence = new AuthPersistence(this.app);
         const subscriptionPersistence = new SubscriptionPersistence(
@@ -52,97 +62,30 @@ export class ExecuteBlockActionHandler {
             this.persistence,
             this.read.getPersistenceReader()
         );
+
+        const modalPersistence = new ModalPersistence(
+            this.persistence,
+            this.read.getPersistenceReader(),
+            user.id,
+            container.id
+        );
         const questionBlocks = await questionPersistence.getQuestionBlocks(
             this.app.getID()
         );
         try {
-            switch (blockId) {
-                case ElementEnum.ADD_QUESTION_BLOCK: {
-                    const questionBlockId = uuidv4();
-                    const questionActionId = uuidv4();
-                    const questionTypeActionId = uuidv4();
+            switch (actionId) {
+                case ElementEnum.ADD_QUESTION_ACTION: {
+                    const QuestionName = `${
+                        ElementEnum.QUESTION_TITLE_ACTION
+                    }-${uuidv4()}`;
+                    const QuestionType = `${
+                        ElementEnum.QUESTION_TYPE_ACTION
+                    }-${uuidv4()}`;
 
-                    let blocks: LayoutBlock[] = [
-                        {
-                            type: "input",
-                            label: {
-                                type: TextTypes.PLAIN_TEXT,
-                                text: "Add new question",
-                            },
-                            element: {
-                                type: "plain_text_input",
-                                placeholder: {
-                                    text: "Untitled Question",
-                                    type: TextTypes.PLAIN_TEXT,
-                                },
-                                blockId:
-                                    ElementEnum.QUESTION_ACTION +
-                                    questionBlockId,
-                                actionId:
-                                    ElementEnum.QUESTION_ACTION +
-                                    questionActionId,
-                                appId: this.app.getID(),
-                            },
-                        },
-                        {
-                            type: "actions",
-                            elements: [
-                                {
-                                    type: "static_select",
-                                    actionId:
-                                        ElementEnum.QUESTION_TYPE_ACTION +
-                                        questionTypeActionId,
-                                    options: [
-                                        {
-                                            value: "TEXT",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "Short Answer",
-                                                emoji: true,
-                                            },
-                                        },
-                                        {
-                                            value: "PARAGRAPH",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "Paragraph",
-                                                emoji: true,
-                                            },
-                                        },
-                                        {
-                                            value: "RADIO",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "Radio",
-                                                emoji: true,
-                                            },
-                                        },
-                                        {
-                                            value: "CHECKBOX",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "Checkbox",
-                                                emoji: true,
-                                            },
-                                        },
-                                    ],
-                                    placeholder: {
-                                        type: "plain_text",
-                                        text: "Select an item",
-                                    },
-                                    appId: this.app.getID(),
-                                    blockId: ElementEnum.QUESTION_TYPE_BLOCK,
-                                },
-                            ],
-                        },
-                    ];
-
-                    questionBlocks.push(...blocks);
-
-                    await questionPersistence.saveQuestionBlocks(
-                        this.app.getID(),
-                        questionBlocks
-                    );
+                    await modalPersistence.storeInteractionId({
+                        QuestionType,
+                        QuestionName,
+                    });
 
                     const modal = (await CreateFormModal({
                         app: this.app,
@@ -154,9 +97,9 @@ export class ExecuteBlockActionHandler {
                         persis: this.persistence,
                         triggerId: triggerId,
                         threadId: threadId,
+                        modalPersistence: modalPersistence,
                         id: this.app.getID(),
                     })) as IUIKitSurfaceViewParam;
-
                     if (triggerId) {
                         await this.modify
                             .getUiController()
@@ -164,98 +107,7 @@ export class ExecuteBlockActionHandler {
                     }
                     break;
                 }
-                case ElementEnum.QUESTION_TYPE_BLOCK: {
-                    let blocks: LayoutBlock[] = [];
-                    if (value === "RADIO" || value === "CHECKBOX") {
-                        blocks.push({
-                            type: "section",
-                            accessory: {
-                                type: "button",
-                                blockId: ElementEnum.ADD_OPTION_BLOCK,
-                                actionId: ElementEnum.ADD_OPTION_ACTION,
-                                appId: this.app.getID(),
-                                text: {
-                                    type: "plain_text",
-                                    text: "Add Option",
-                                },
-                            },
-                        });
-                    }
-
-                    questionBlocks.push(...blocks);
-                    await questionPersistence.saveQuestionBlocks(
-                        this.app.getID(),
-                        questionBlocks
-                    );
-
-                    const modal = (await CreateFormModal({
-                        app: this.app,
-                        read: this.read,
-                        modify: this.modify,
-                        http: this.http,
-                        sender: user,
-                        room: room,
-                        persis: this.persistence,
-                        triggerId: triggerId,
-                        threadId: threadId,
-                        id: this.app.getID(),
-                    })) as IUIKitSurfaceViewParam;
-
-                    if (triggerId) {
-                        await this.modify
-                            .getUiController()
-                            .updateSurfaceView(modal, { triggerId }, user);
-                    }
-                    break;
-                }
-
-                case ElementEnum.ADD_OPTION_BLOCK: {
-                    let optionActionId = uuidv4();
-                    const blocks: LayoutBlock = {
-                        type: "input",
-                        label: {
-                            text: "",
-                            type: "plain_text",
-                        },
-                        element: {
-                            type: "plain_text_input",
-                            actionId: ElementEnum.OPTIONS_ACTION + optionActionId,
-                            blockId: ElementEnum.OPTIONS_BLOCK,
-                            appId: this.app.getID(),
-                            placeholder: {
-                                type: "plain_text",
-                                text: "Untitled Option",
-                            },
-                        },
-                    };
-
-                    questionBlocks.splice(questionBlocks.length - 1, 0, blocks);
-                    await questionPersistence.saveQuestionBlocks(
-                        this.app.getID(),
-                        questionBlocks
-                    );
-
-                    const modal = (await CreateFormModal({
-                        app: this.app,
-                        read: this.read,
-                        modify: this.modify,
-                        http: this.http,
-                        sender: user,
-                        room: room,
-                        persis: this.persistence,
-                        triggerId: triggerId,
-                        threadId: threadId,
-                        id: this.app.getID(),
-                    })) as IUIKitSurfaceViewParam;
-
-                    if (triggerId) {
-                        await this.modify
-                            .getUiController()
-                            .updateSurfaceView(modal, { triggerId }, user);
-                    }
-                    break;
-                }
-                case ElementEnum.SUBSCRIPTION_BLOCK: {
+                case ElementEnum.SUBSCRIPTION_ACTION: {
                     const { topic } = await getCredentials(this.read);
                     try {
                         const token =
@@ -312,7 +164,7 @@ export class ExecuteBlockActionHandler {
                     break;
                 }
 
-                case ElementEnum.SHARE_RESPONSES_BLOCK: {
+                case ElementEnum.SHARE_RESPONSES_ACTION: {
                     const token = await authPersistence.getAccessTokenForUser(
                         user,
                         this.read
@@ -407,10 +259,115 @@ export class ExecuteBlockActionHandler {
                     );
                 }
 
-                case ElementEnum.LOGIN_BUTTON_BLOCK: {
+                case ElementEnum.ADD_OPTION_ACTION: {
+                    const { data } =
+                        await modalPersistence.getAllInteractionActionId();
+                    const index = data.findIndex((record) => {
+                        return (record?.[ElementEnum.QUESTION_TYPE] === value);
+                    });
+
+                    const options = data[index]?.[OtherEnum.ADDITIONAL_CONFIG]?.[OtherEnum.OPTIONS];
+
+                    if (actionId.toString() === ElementEnum.ADD_OPTION_ACTION) {
+                        options.push({
+                            [ElementEnum.INPUT_FIELD]: `${ElementEnum.OPTIONS_ACTION}-${uuidv4()}`,
+                        });
+                    } else {
+                        options.pop();
+                    }
+
+                    await modalPersistence.updateInteractionActionId(data);
+                    const modal = (await CreateFormModal({
+                        app: this.app,
+                        read: this.read,
+                        modify: this.modify,
+                        http: this.http,
+                        sender: user,
+                        room: room,
+                        persis: this.persistence,
+                        triggerId: triggerId,
+                        threadId: threadId,
+                        modalPersistence: modalPersistence,
+                        id: this.app.getID(),
+                    })) as IUIKitSurfaceViewParam;
+                    if (triggerId) {
+                        await this.modify
+                            .getUiController()
+                            .updateSurfaceView(modal, { triggerId }, user);
+                    }
+                    break;
+                }
+
+                case ElementEnum.LOGIN_BUTTON_ACTION: {
+                    console.log("Login");
+                    break;
                 }
                 default: {
-                    console.log("Default executed");
+                    const questionTypeSelected =
+                        ElementEnum.QUESTION_TYPE_ACTION.toString();
+                    const questionTypeDispatchAction =
+                        actionId.startsWith(questionTypeSelected);
+
+                    if (questionTypeDispatchAction) {
+                        const { data } =
+                            await modalPersistence.getAllInteractionActionId();
+                        const index = data.findIndex((record) => {
+                            return (
+                                record?.[ElementEnum.QUESTION_TYPE] === actionId
+                            );
+                        });
+
+                        const QuestionName =
+                            data[index]?.[ElementEnum.QUESTION_NAME];
+                        const QuestionType =
+                            data[index]?.[ElementEnum.QUESTION_TYPE];
+
+                        const commonProperties = {
+                            QuestionType,
+                            QuestionName,
+                        };
+
+                        if (value) {
+                            switch (value) {
+                                case "RADIO":
+                                case "CHECKBOX": {
+                                    data[index] = {
+                                        ...commonProperties,
+                                        [OtherEnum.ADDITIONAL_CONFIG]: {
+                                            type: value,
+                                            [OtherEnum.OPTIONS]: [],
+                                        },
+                                    };
+                                    break;
+                                }
+                                default: {
+                                    data[index] = {
+                                        ...commonProperties,
+                                    };
+                                }
+                            }
+                        }
+
+                        await modalPersistence.updateInteractionActionId(data);
+                        const modal = (await CreateFormModal({
+                            app: this.app,
+                            read: this.read,
+                            modify: this.modify,
+                            http: this.http,
+                            sender: user,
+                            room: room,
+                            persis: this.persistence,
+                            triggerId: triggerId,
+                            threadId: threadId,
+                            modalPersistence: modalPersistence,
+                            id: this.app.getID(),
+                        })) as IUIKitSurfaceViewParam;
+                        if (triggerId) {
+                            await this.modify
+                                .getUiController()
+                                .updateSurfaceView(modal, { triggerId }, user);
+                        }
+                    }
                 }
             }
         } catch (error) {

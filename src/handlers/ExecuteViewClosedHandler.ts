@@ -13,6 +13,7 @@ import {
 import { ModalEnum } from "../enums/ModalEnum";
 import { QuestionPersistence } from "../persistence/questionPersistence";
 import { deleteForms } from "./FormHandler";
+import { ModalPersistence } from "../persistence/ModalPersistence";
 
 export class ExecuteViewClosedHandler {
     constructor(
@@ -24,11 +25,13 @@ export class ExecuteViewClosedHandler {
     ) {}
 
     public async execute(context: UIKitViewCloseInteractionContext): Promise<IUIKitResponse> {
-        const { view } = context.getInteractionData();
+        const { view, user } = context.getInteractionData();
         const questionPersistence = new QuestionPersistence(this.persistence, this.read.getPersistenceReader());
+        const modalPersistence = new ModalPersistence(this.persistence, this.read.getPersistenceReader(), user.id, view.id);
         switch(view.id) {
             case ModalEnum.CREATE_FORM_VIEW : {
-                await questionPersistence.deleteQuestionBlocks(this.app.getID());
+                // await questionPersistence.deleteQuestionBlocks(this.app.getID());
+                await modalPersistence.clearAllInteractionActionId();
                 break;
             }
             default: {
