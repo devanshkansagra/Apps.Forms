@@ -89,7 +89,7 @@ export async function deleteForms(
         persis,
         read.getPersistenceReader(),
     );
-    const modalPersistence = new ModalPersistence(this.persistence, this.read.getPersistenceReader(), user.id, ModalEnum.CREATE_FORM_VIEW);
+    const modalPersistence = new ModalPersistence(persis, read.getPersistenceReader(), user.id, ModalEnum.CREATE_FORM_VIEW);
     await formPersistence.clearFormData(room, user);
     await modalPersistence.clearAllInteractionActionId();
 }

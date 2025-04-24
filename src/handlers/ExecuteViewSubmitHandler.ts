@@ -33,11 +33,10 @@ export class ExecuteViewSubmitHandler {
     }
 
     public async execute(): Promise<IUIKitResponse> {
-        const { view, user , room } = this.context.getInteractionData();
-        const { state } = view;
-        const roomId = (await this.read
+        const { view, user  } = this.context.getInteractionData();
+        const room = (await this.read
             .getRoomReader()
-            .getById(room?.id as string)) as IRoom;
+            .getById('GENERAL')) as IRoom;
         const questionPersistence = new QuestionPersistence(
             this.persistence,
             this.read.getPersistenceReader(),
@@ -56,48 +55,42 @@ export class ExecuteViewSubmitHandler {
             switch (view.id) {
                 case ModalEnum.CREATE_FORM_VIEW: {
 
-                    const questions = view?.state?.[ElementEnum.QUESTION_TITLE_BLOCK];
-                    console.log(view);
-                    // const res = await sdk.createGoogleForm(
-                    //     formData,
-                    //     user,
-                    //     this.read,
-                    // );
+                    const res = await sdk.createGoogleForm(
+                        view,
+                        user,
+                        this.read,
+                    );
 
-                    // const data = (await formPersistence.getFormData(
-                    //     room,
-                    //     user,
-                    // )) as Array<object>;
-                    // data.push(res?.data);
-                    // await formPersistence.storeFormData(room, data, user);
+                    const data = (await formPersistence.getFormData(
+                        room,
+                        user,
+                    )) as Array<object>;
+                    data.push(res?.data);
+                    await formPersistence.storeFormData(room, data, user);
 
-                    // if (!res) {
-                    //     await sendNotification(
-                    //         this.read,
-                    //         this.modify,
-                    //         user,
-                    //         room,
-                    //         "Unable to create Google Form please login to create",
-                    //     );
-                    //     return { success: false };
-                    // }
+                    if (!res) {
+                        await sendNotification(
+                            this.read,
+                            this.modify,
+                            user,
+                            room,
+                            "Unable to create Google Form please login to create",
+                        );
+                        return { success: false };
+                    }
 
-                    // await sendNotification(
-                    //     this.read,
-                    //     this.modify,
-                    //     user,
-                    //     room,
-                    //     "New Google Form Created by " +
-                    //         user.name +
-                    //         " : [Open to fill form]" +
-                    //         "(" +
-                    //         res?.data.responderUri +
-                    //         ")",
-                    // );
-
-                    // await questionPersistence.deleteQuestionBlocks(
-                    //     this.app.getID(),
-                    // );
+                    await sendNotification(
+                        this.read,
+                        this.modify,
+                        user,
+                        room,
+                        "New Google Form Created by " +
+                            user.name +
+                            " : [Open to fill form]" +
+                            "(" +
+                            res?.data.responderUri +
+                            ")",
+                    );
 
                     await modalPersistence.clearAllInteractionActionId();
                 }

@@ -81,10 +81,13 @@ export class ExecuteBlockActionHandler {
                     const QuestionType = `${
                         ElementEnum.QUESTION_TYPE_ACTION
                     }-${uuidv4()}`;
+                    const QuestionBlock = `${ElementEnum.QUESTION_TITLE_BLOCK}-${uuidv4()}`
 
                     await modalPersistence.storeInteractionId({
+                        QuestionBlock,
                         QuestionType,
                         QuestionName,
+
                     });
 
                     const modal = (await CreateFormModal({
@@ -321,8 +324,11 @@ export class ExecuteBlockActionHandler {
                             data[index]?.[ElementEnum.QUESTION_NAME];
                         const QuestionType =
                             data[index]?.[ElementEnum.QUESTION_TYPE];
+                        
+                        const QuestionBlock = data[index]?.[ElementEnum.QUESTION_BLOCK];
 
                         const commonProperties = {
+                            QuestionBlock,
                             QuestionType,
                             QuestionName,
                         };

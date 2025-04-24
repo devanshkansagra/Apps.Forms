@@ -109,7 +109,7 @@ export async function CreateFormModal({
                 element: {
                     type: "plain_text_input",
                     actionId: record?.[ElementEnum.QUESTION_NAME],
-                    blockId: ElementEnum.QUESTION_TITLE_BLOCK,
+                    blockId: record?.[ElementEnum.QUESTION_BLOCK],
                     appId: id,
                     placeholder: {
                         type: "plain_text",
@@ -165,7 +165,7 @@ export async function CreateFormModal({
                             text: "Select type of question",
                         },
                         appId: id,
-                        blockId:ElementEnum.QUESTION_TYPE_BLOCK,
+                        blockId:record?.[ElementEnum.QUESTION_BLOCK],
                     },
                 ],
             };
@@ -242,7 +242,7 @@ function addOptions(record: object, app: SurveysApp) {
                 },
                 element: {
                     type: 'plain_text_input',
-                    blockId: ElementEnum.QUESTION_TITLE_BLOCK,
+                    blockId: record?.[ElementEnum.QUESTION_BLOCK],
                     actionId: actionId,
                     appId: app.getID(),
                     placeholder: {

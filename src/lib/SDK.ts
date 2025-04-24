@@ -15,6 +15,7 @@ import { IAuthData } from "@rocket.chat/apps-engine/definition/oauth2/IOAuth2";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { sendNotification } from "../helpers/message";
 import { isModalView } from "@rocket.chat/ui-kit";
+import { IUIKitSurface } from "@rocket.chat/apps-engine/definition/uikit";
 
 export class SDK {
     constructor(
@@ -89,7 +90,11 @@ export class SDK {
                 scope: response.data?.scope,
             };
 
-            await this.authPersistence.setAccessTokenForUser(newAccessToken, user, persis);
+            await this.authPersistence.setAccessTokenForUser(
+                newAccessToken,
+                user,
+                persis
+            );
         }
     }
 
@@ -141,14 +146,20 @@ export class SDK {
         }
     }
 
-    public async createGoogleForm(formData: any, user: IUser, read: IRead) {
+    public async createGoogleForm(
+        view: IUIKitSurface,
+        user: IUser,
+        read: IRead
+    ) {
         const token = await this.authPersistence.getAccessTokenForUser(
             user,
             read
         );
         const accessToken = token.token;
-
-        const formTitle = formData[ElementEnum.FORM_TITLE_ACTION];
+        const formTitle =
+            view.state?.[ElementEnum.FORM_TITLE_BLOCK]?.[
+                ElementEnum.FORM_TITLE_ACTION
+            ];
 
         const createFormResponse = await this.http.post(
             "https://forms.googleapis.com/v1/forms",
@@ -171,13 +182,16 @@ export class SDK {
             );
             return;
         }
-
         const createdForm = createFormResponse;
         const formId = createdForm.data?.formId;
 
         const requests: any[] = [];
 
-        const formDescription = formData[ElementEnum.FORM_DESCRIPTION_ACTION];
+        const formDescription =
+            view.state?.[ElementEnum.FORM_DESCRIPTION_BLOCK]?.[
+                ElementEnum.FORM_DESCRIPTION_ACTION
+            ];
+
         requests.push({
             updateFormInfo: {
                 info: {
@@ -186,30 +200,41 @@ export class SDK {
                 updateMask: "description",
             },
         });
+        const questionTitlePrefix = ElementEnum.QUESTION_TITLE_ACTION;
+        const questionTypePrefix = ElementEnum.QUESTION_TYPE_ACTION;
+        const optionPrefix = ElementEnum.OPTIONS_ACTION;
 
-        const questionTextKeys = Object.keys(formData).filter(
-            (key) =>
-                key.startsWith(ElementEnum.QUESTION_ACTION) &&
-                !key.includes(ElementEnum.QUESTION_TYPE_ACTION)
+        let formData = Object.entries(view.state ?? {}).map(
+            ([blockId, blockData]) => {
+                let questionTitle: string = "";
+                let type = "";
+                let options: string[] = [];
+                for (const [key, value] of Object.entries(blockData)) {
+                    if (key.startsWith(questionTitlePrefix.toString())) {
+                        questionTitle = value as string;
+                    } else if (key.startsWith(questionTypePrefix.toString())) {
+                        type = value as string;
+                    } else if (key.startsWith(optionPrefix.toString())) {
+                        options.push(value as string);
+                    }
+                }
+                return {
+                    blockId: blockId,
+                    title: questionTitle,
+                    type: type,
+                    options: options,
+                };
+            }
         );
-        const questionTypeKeys = Object.keys(formData).filter((key) =>
-            key.startsWith(ElementEnum.QUESTION_TYPE_ACTION)
-        );
 
-        if (questionTextKeys.length !== questionTypeKeys.length) {
-            return;
-        }
-        questionTextKeys.forEach((questionTextKey, index) => {
-            const questionText = formData[questionTextKey];
-            const questionType = formData[questionTypeKeys[index]];
-            const questionOptions = [];
-
+        formData = formData.filter((data) => (data.title && data.type) !== "");
+        formData.forEach((data, index) => {
             let questionItem: any;
-            if (questionType === "TEXT") {
+            if (data.type === "TEXT") {
                 questionItem = {
                     createItem: {
                         item: {
-                            title: questionText,
+                            title: data.title,
                             questionItem: {
                                 question: {
                                     textQuestion: {
@@ -223,11 +248,11 @@ export class SDK {
                         },
                     },
                 };
-            } else if (questionType === "PARAGRAPH") {
+            } else if (data.type === "PARAGRAPH") {
                 questionItem = {
                     createItem: {
                         item: {
-                            title: questionText,
+                            title: data.title,
                             questionItem: {
                                 question: {
                                     textQuestion: {
@@ -241,54 +266,28 @@ export class SDK {
                         },
                     },
                 };
-            } else if (questionType === "RADIO") {
+            } else if (data.type === "RADIO" || data.type === "CHECKBOX") {
                 questionItem = {
                     createItem: {
                         item: {
-                            title: questionText,
+                            title: data.title,
                             questionItem: {
                                 question: {
                                     choiceQuestion: {
-                                        type: 'radio',
-                                        options: [
-                                            {value: 'option1'},
-                                            {value: 'option2'},
-                                            {value: 'option3'}
-                                        ]
-                                    }
-                                }
-                            }
+                                        type: data.type,
+                                        options: data.options.map((option) => {
+                                            return { value: option };
+                                        }),
+                                    },
+                                },
+                            },
                         },
                         location: {
-                            index: index
-                        }
-                    }
-                }
-            } else if(questionType === "CHECKBOX") {
-                questionItem = {
-                    createItem: {
-                        item: {
-                            title: questionText,
-                            questionItem: {
-                                question: {
-                                    choiceQuestion: {
-                                        type: 'checkbox',
-                                        options: [
-                                            {value: 'option1'},
-                                            {value: 'option2'},
-                                            {value: 'option3'}
-                                        ]
-                                    }
-                                }
-                            }
+                            index: index,
                         },
-                        location: {
-                            index: index
-                        }
-                    }
-                }
+                    },
+                };
             }
-
             if (questionItem) {
                 requests.push(questionItem);
             }
