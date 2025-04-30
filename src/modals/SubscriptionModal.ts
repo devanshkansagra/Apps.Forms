@@ -56,8 +56,8 @@ export async function SubscriptionModal({
             },
             accessory: {
                 type: "button",
-                blockId: ElementEnum.SUBSCRIPTION_BLOCK,
-                actionId: form.formId,
+                blockId: form.formId,
+                actionId: ElementEnum.SUBSCRIPTION_ACTION,
                 appId: id,
                 text: {
                     type: "plain_text",

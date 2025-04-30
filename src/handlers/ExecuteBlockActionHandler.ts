@@ -14,9 +14,7 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { ElementEnum } from "../enums/ElementEnum";
 import { LayoutBlock } from "@rocket.chat/ui-kit";
-import { TextTypes } from "../enums/TextTypes";
 import { CreateFormModal } from "../modals/CreateFormModal";
-import { QuestionPersistence } from "../persistence/questionPersistence";
 import { sendMessage, sendNotification } from "../helpers/message";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { AuthPersistence } from "../persistence/authPersistence";
@@ -58,19 +56,11 @@ export class ExecuteBlockActionHandler {
             this.read.getPersistenceReader()
         );
 
-        const questionPersistence = new QuestionPersistence(
-            this.persistence,
-            this.read.getPersistenceReader()
-        );
-
         const modalPersistence = new ModalPersistence(
             this.persistence,
             this.read.getPersistenceReader(),
             user.id,
             container.id
-        );
-        const questionBlocks = await questionPersistence.getQuestionBlocks(
-            this.app.getID()
         );
         try {
             switch (actionId) {
@@ -130,7 +120,7 @@ export class ExecuteBlockActionHandler {
                             },
                         };
                         const response = await this.http.post(
-                            `https://forms.googleapis.com/v1/forms/${actionId}/watches`,
+                            `https://forms.googleapis.com/v1/forms/${blockId}/watches`,
                             {
                                 headers: {
                                     Authorization: `Bearer ${accessToken.token}`,
@@ -140,12 +130,14 @@ export class ExecuteBlockActionHandler {
                                 query: user.id,
                             }
                         );
+
+                        console.log(response);
                         if (response.data.error) {
                             throw new Error(
                                 JSON.stringify(response.data.error)
                             );
                         } else {
-                            const formId = actionId;
+                            const formId = blockId;
                             const userId = user.id;
                             const roomId = room?.id;
                             const watchId = response?.data.id;
@@ -174,13 +166,13 @@ export class ExecuteBlockActionHandler {
                     );
                     const accessToken = token.token;
                     const formData = await this.app.sdk.getFormData(
-                        actionId,
+                        blockId,
                         user,
                         this.read,
                         accessToken.token
                     );
                     const responseData = await this.app.sdk.getFormResponses(
-                        actionId,
+                        blockId,
                         accessToken.token
                     );
 
@@ -210,6 +202,8 @@ export class ExecuteBlockActionHandler {
                         );
                         return;
                     }
+
+                    console.log(responses);
 
                     const blocks: LayoutBlock[] = [];
                     responses.sort((a, b) =>
