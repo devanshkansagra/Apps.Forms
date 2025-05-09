@@ -1,4 +1,4 @@
-[pub_sub_setup.webm](https://github.com/user-attachments/assets/f48e5d54-b7c9-4d75-8306-d2a5fcd7bb3e)# GoogleForm Integration for RocketChat (Prototype)
+# GoogleForm Integration for RocketChat (Prototype)
 
 ![Rocket Chat](https://github.com/user-attachments/assets/f9d4c7f5-3b1d-4e53-8fed-69975f5562ef)
 
