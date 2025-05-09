@@ -23,7 +23,7 @@ This project aims to bring the core functionality of tools like Google Forms dir
 
 1. Clone the repo
     ```sh
-    git clone https://github.com/<yourusername>/Apps.Notion
+    git clone https://github.com/<yourusername>/Apps.Forms
     ```
 2. Install NPM packages
     ```sh
